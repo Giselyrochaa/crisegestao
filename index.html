@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boletim de Ocorrência – Gestão de Crise de Imagem (Versão Melhorada)</title>
+    <!-- Carrega o Tailwind CSS para styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Configuração de fonte padrão e cores */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc; /* Fundo levemente azulado */
+        }
+        .form-container {
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .required-label::after {
+            content: '*';
+            color: #ef4444; /* Vermelho forte para campos obrigatórios */
+            margin-left: 0.25rem;
+        }
+        /* Estilo para simular os campos de anexo mais bonitos */
+        .file-upload-box {
+            border: 2px dashed #93c5fd; /* Borda tracejada azul */
+            background-color: #eff6ff; /* Fundo azul claro */
+            transition: all 0.3s ease;
+        }
+        .file-upload-box:hover {
+            border-color: #3b82f6; /* Azul mais escuro no hover */
+            background-color: #e0f2fe;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="form-container max-w-5xl mx-auto bg-white rounded-xl p-6 md:p-10">
+        <!-- Título e Objetivo -->
+        <header class="mb-8 border-b pb-4">
+            <h1 class="text-3xl font-extrabold text-blue-900 mb-2">Boletim de Ocorrência – Gestão de Crise de Imagem</h1>
+            <h2 class="text-xl font-semibold text-gray-700">(Versão Otimizada - Instituto Evereste)</h2>
+            <p class="mt-4 text-gray-500 italic text-sm">
+                Objetivo: Criar um processo organizado, claro e eficiente para registro, análise e acompanhamento de crises de imagem,
+                incluindo a base para geração automática de relatório.
+            </p>
+        </header>
+
+        <form id="crisisForm" onsubmit="handleFormSubmission(event)" class="space-y-8">
+
+            <!-- 1. IDENTIFICAÇÃO (A) -->
+            <section class="p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-blue-800 mb-4">1. Identificação do Registro</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Data e Hora do Registro (Automático) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label" for="registro-data-hora">Data e Hora do Registro</label>
+                        <input type="text" id="registro-data-hora" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 p-3" readonly required value="Preenchido automaticamente ao iniciar o formulário.">
+                        <small class="text-xs text-gray-500">Valor será definido via script ao carregar.</small>
+                    </div>
+
+                    <!-- Nome do responsável pelo registro (Obrigatório) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label" for="responsavel-nome">Nome do Responsável</label>
+                        <input type="text" id="responsavel-nome" placeholder="Seu nome completo" class="mt-1 block w-full rounded-md border border-gray-300 p-3" required>
+                    </div>
+
+                    <!-- Cargo/Setor (Obrigatório) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label" for="responsavel-cargo">Cargo/Setor</label>
+                        <input type="text" id="responsavel-cargo" placeholder="Ex: Analista de Comunicação/RH" class="mt-1 block w-full rounded-md border border-gray-300 p-3" required>
+                    </div>
+
+                    <!-- Telefone/Whatsapp (Obrigatório) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label" for="responsavel-contato">Telefone/WhatsApp</label>
+                        <input type="tel" id="responsavel-contato" placeholder="(XX) 9XXXX-XXXX" class="mt-1 block w-full rounded-md border border-gray-300 p-3" required>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. INFORMAÇÕES DA OCORRÊNCIA (B) -->
+            <section class="p-6 bg-white rounded-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-blue-800 mb-4">2. Detalhes da Crise</h3>
+
+                <!-- Fato Gerador da Crise (Obrigatório, Mínimo 5 linhas) -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 required-label" for="fato-gerador">Fato Gerador da Crise (Resumo Executivo)</label>
+                    <textarea id="fato-gerador" rows="5" placeholder="Descreva de forma concisa (mínimo 5 linhas) o evento específico que desencadeou a crise. Ex: Postagem indevida em rede social por ex-colaborador, nota de imprensa negativa sobre um novo projeto, vazamento de dados." class="mt-1 block w-full rounded-md border border-gray-300 p-3" required minlength="50"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Data e Hora do Ocorrido (Obrigatório) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label" for="data-ocorrencia">Data e Hora do Ocorrido</label>
+                        <input type="datetime-local" id="data-ocorrencia" class="mt-1 block w-full rounded-md border border-gray-300 p-3" required>
+                        <small class="text-xs text-gray-500">Quando o evento ocorreu/foi publicado.</small>
+                    </div>
+
+                    <!-- Área/Setor Envolvido (Obrigatório) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label" for="setor-envolvido">Área/Setor Envolvido (Principal)</label>
+                        <input type="text" id="setor-envolvido" placeholder="Ex: Marketing, Financeiro, Diretoria" class="mt-1 block w-full rounded-md border border-gray-300 p-3" required>
+                    </div>
+                </div>
+
+                <!-- Canal onde a crise foi detectada (Obrigatório + Outros) -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 required-label">Canal de Detecção (Múltipla Escolha)</label>
+                    <div class="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-blue-50 rounded-md">
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="canal-deteccao" value="E-mail" class="rounded text-blue-600 focus:ring-blue-500"><span>E-mail</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="canal-deteccao" value="Instagram" class="rounded text-blue-600 focus:ring-blue-500"><span>Instagram</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="canal-deteccao" value="WhatsApp" class="rounded text-blue-600 focus:ring-blue-500"><span>WhatsApp</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="canal-deteccao" value="LinkedIn" class="rounded text-blue-600 focus:ring-blue-500"><span>LinkedIn</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="canal-deteccao" value="Imprensa Tradicional" class="rounded text-blue-600 focus:ring-blue-500"><span>Imprensa</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="canal-deteccao" value="Google (SEO/Reviews)" class="rounded text-blue-600 focus:ring-blue-500"><span>Google/Reviews</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="canal-deteccao" value="YouTube/TikTok" class="rounded text-blue-600 focus:ring-blue-500"><span>YouTube/TikTok</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="canal-deteccao" value="Glassdoor/ReclameAqui" class="rounded text-blue-600 focus:ring-blue-500"><span>Reclamações Online</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="canal-deteccao" value="Outros" id="canal-outros-check" class="rounded text-blue-600 focus:ring-blue-500"><span>Outros (Especifique abaixo)</span></label>
+                    </div>
+                    <input type="text" id="canal-outros-text" placeholder="Selecione 'Outros' e descreva o canal, se necessário." class="mt-2 block w-full rounded-md border border-gray-300 p-2 text-sm" disabled>
+                </div>
+
+                <!-- Origem da Crise (Obrigatório) -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 required-label">Origem da Crise</label>
+                    <div class="mt-2 flex space-x-4">
+                        <label class="flex items-center space-x-2"><input type="radio" name="origem-crise" value="Interna" class="text-blue-600" required><span>Interna (Colaborador, Processo, Produto)</span></label>
+                        <label class="flex items-center space-x-2"><input type="radio" name="origem-crise" value="Externa" class="text-blue-600"><span>Externa (Concorrente, Ação Social/Política)</span></label>
+                        <label class="flex items-center space-x-2"><input type="radio" name="origem-crise" value="Mista" class="text-blue-600"><span>Mista</span></label>
+                    </div>
+                </div>
+
+                <!-- Público Afetado (Múltipla Escolha) -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 required-label">Público(s) Afetado(s)</label>
+                    <div class="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="publico-afetado" value="Colaboradores (Atual e Ex)" class="rounded text-blue-600 focus:ring-blue-500" required><span>Colaboradores</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="publico-afetado" value="Parceiros/Fornecedores" class="rounded text-blue-600 focus:ring-blue-500"><span>Parceiros</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="publico-afetado" value="Clientes/Consumidores" class="rounded text-blue-600 focus:ring-blue-500"><span>Clientes</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="publico-afetado" value="Sociedade em Geral" class="rounded text-blue-600 focus:ring-blue-500"><span>Sociedade em Geral</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="publico-afetado" value="Órgãos Reguladores/Governo" class="rounded text-blue-600 focus:ring-blue-500"><span>Reguladores/Governo</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="publico-afetado" value="Outros" class="rounded text-blue-600 focus:ring-blue-500"><span>Outros</span></label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. CLASSIFICAÇÃO E IMPACTO (C & D) -->
+            <section class="p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-blue-800 mb-4">3. Classificação e Impacto da Crise</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Classificação da Crise (C) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label">Classificação da Crise (Nível de Risco)</label>
+                        <div class="mt-2 space-y-2 p-3 bg-red-50 rounded-md">
+                            <label class="flex items-center space-x-2"><input type="radio" name="classificacao" value="Sem Relevância Crítica" class="text-green-600" required><span>1 - Sem Relevância Crítica</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="classificacao" value="Potencial" class="text-yellow-600"><span>2 - Potencial (Atenção)</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="classificacao" value="Moderada" class="text-orange-600"><span>3 - Moderada (Ação Imediata)</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="classificacao" value="Grave" class="text-red-600"><span>4 - Grave (Mobilização de Alta Gestão)</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="classificacao" value="Extrema / Reputacional" class="text-red-900 font-bold"><span>5 - Extrema / Reputacional (Acionamento do Comitê de Crise)</span></label>
+                            <!-- Flexibilidade para adicionar novas classificações -->
+                            <div class="mt-2 pt-2 border-t border-red-100">
+                                <label class="flex items-center space-x-2"><input type="radio" name="classificacao" value="Outras" id="classificacao-outras-check" class="text-red-600"><span>Outras (Especifique)</span></label>
+                                <input type="text" id="classificacao-outras-text" placeholder="Nova Classificação" class="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm" disabled>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Impacto Estimado (D) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label">Impacto(s) Estimado(s)</label>
+                        <div class="mt-2 space-y-2 p-3 bg-gray-100 rounded-md">
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="impacto-estimado" value="Reputacional" class="rounded text-blue-600 focus:ring-blue-500" required><span>Reputacional (Percepção da Marca)</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="impacto-estimado" value="Financeiro" class="rounded text-blue-600 focus:ring-blue-500"><span>Financeiro (Vendas, Ações, Multas)</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="impacto-estimado" value="Jurídico" class="rounded text-blue-600 focus:ring-blue-500"><span>Jurídico (Processos, Notificações)</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="impacto-estimado" value="Operacional" class="rounded text-blue-600 focus:ring-blue-500"><span>Operacional (Paralisação, Disrupção)</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="impacto-estimado" value="Pessoas" class="rounded text-blue-600 focus:ring-blue-500"><span>Pessoas (RH, Clima Interno)</span></label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. DESCRIÇÃO DETALHADA E INDÍCIOS (E) -->
+            <section class="p-6 bg-white rounded-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-blue-800 mb-4">4. Descrição Detalhada e Indícios Registrados</h3>
+
+                <!-- Descrição Detalhada do Ocorrido (Obrigatório) -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 required-label" for="descricao-detalhada">Descrição Detalhada do Ocorrido (Contexto, Repercussão Inicial)</label>
+                    <textarea id="descricao-detalhada" rows="8" placeholder="Inclua o máximo de detalhes possível, incluindo a linha do tempo inicial dos eventos, quem foi o autor, qual foi a reação inicial do público, e qualquer informação crítica de contexto." class="mt-1 block w-full rounded-md border border-gray-300 p-3" required></textarea>
+                </div>
+
+                <!-- Indícios Registrados (Anexos) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 required-label" for="anexos">Anexos/Indícios Registrados (Prints, PDFs, Vídeos, Documentos)</label>
+                    <div class="file-upload-box mt-1 flex justify-center px-6 pt-5 pb-6 border-2 rounded-md">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-8m32-12l-3.232 3.232a4.492 4.492 0 00-.776 1.748L24 24M16 8h4m-4 0v4m-4 0h4m-4 0v4m4-4h4m-4 0v4m-4 0h4m-4 0v4m4-4h4m-4 0v4m-4 0h4m-4 0v4m4-4h4m-4 0v4m-4 0h4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="anexos" class="relative cursor-pointer rounded-md bg-white font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 p-1">
+                                    <span>Fazer upload dos arquivos</span>
+                                    <input id="anexos" name="anexos" type="file" class="sr-only" multiple accept="image/*, application/pdf, video/*">
+                                </label>
+                                <p class="pl-1">ou arraste e solte</p>
+                            </div>
+                            <p class="text-xs text-gray-500">Limite: 10 arquivos (Imagens, PDFs, Vídeos curtos). Tamanho máximo: 100MB.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. AÇÕES E EQUIPE (F & G) -->
+            <section class="p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-blue-800 mb-4">5. Ações Imediatas e Equipe Designada</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Ações Imediatas Tomadas (F) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label">Ações Imediatas Tomadas (Contenção)</label>
+                        <div class="mt-2 space-y-2 p-3 bg-green-50 rounded-md">
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="acao-imediata" value="Remoção de conteúdo" class="rounded text-green-600 focus:ring-green-500"><span>Remoção/Ocultação de conteúdo</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="acao-imediata" value="Contenção de comentários" class="rounded text-green-600 focus:ring-green-500"><span>Contenção/Moderação de comentários</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="acao-imediata" value="Nota preliminar" class="rounded text-green-600 focus:ring-green-500"><span>Emissão de Nota preliminar (Interna/Externa)</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="acao-imediata" value="Contato com o público afetado" class="rounded text-green-600 focus:ring-green-500"><span>Contato direto com público afetado</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="acao-imediata" value="Acionamento jurídico" class="rounded text-green-600 focus:ring-green-500"><span>Acionamento jurídico (Alerta)</span></label>
+                        </div>
+                        <textarea id="acoes-livre" rows="3" placeholder="Descreva outras ações ou detalhes das ações acima." class="mt-4 block w-full rounded-md border border-gray-300 p-2 text-sm"></textarea>
+                    </div>
+
+                    <!-- Equipe Designada (G) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label">Equipe Designada (Múltipla Escolha)</label>
+                        <div class="mt-2 space-y-2 p-3 bg-yellow-50 rounded-md">
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="equipe-designada" value="Porta-voz (Liderança)" class="rounded text-yellow-600 focus:ring-yellow-500" required><span>Porta-voz (Liderança)</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="equipe-designada" value="Jurídico" class="rounded text-yellow-600 focus:ring-yellow-500"><span>Jurídico</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="equipe-designada" value="Comunicação Externa/Assessoria" class="rounded text-yellow-600 focus:ring-yellow-500"><span>Comunicação Externa</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="equipe-designada" value="Monitoramento de Mídia (Social Listening)" class="rounded text-yellow-600 focus:ring-yellow-500"><span>Monitoramento de Mídia</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="equipe-designada" value="Gestão Interna/Operacional" class="rounded text-yellow-600 focus:ring-yellow-500"><span>Gestão Interna/Operacional</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="equipe-designada" value="Tecnologia/TI" class="rounded text-yellow-600 focus:ring-yellow-500"><span>Tecnologia/TI</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" name="equipe-designada" value="Recursos Humanos (RH)" class="rounded text-yellow-600 focus:ring-yellow-500"><span>Recursos Humanos (RH)</span></label>
+                            <!-- Flexibilidade para incluir novos papéis -->
+                            <div class="mt-2 pt-2 border-t border-yellow-100">
+                                <label class="flex items-center space-x-2"><input type="checkbox" name="equipe-designada" value="Outros" id="equipe-outros-check" class="rounded text-yellow-600 focus:ring-yellow-500"><span>Outros (Especifique)</span></label>
+                                <input type="text" id="equipe-outros-text" placeholder="Papel ou Nome do novo responsável" class="mt-1 block w-full rounded-md border border-gray-300 p-2 text-sm" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. PLANO DE AÇÃO EM EXECUÇÃO (H) -->
+            <section class="p-6 bg-white rounded-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-blue-800 mb-4">6. Plano de Ação em Execução (Estratégia)</h3>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 required-label">Lista de Ações em Andamento (Seleção Rápida)</label>
+                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-blue-50 rounded-md">
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="plano-acao" value="Nota oficial" class="rounded text-blue-600 focus:ring-blue-500"><span>Elaboração/Publicação de Nota Oficial</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="plano-acao" value="Reunião emergencial" class="rounded text-blue-600 focus:ring-blue-500"><span>Reunião emergencial/Comitê de Crise</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="plano-acao" value="Monitoramento de menções" class="rounded text-blue-600 focus:ring-blue-500"><span>Monitoramento intensificado de menções</span></label>
+                        <label class="flex items-center space-x-2"><input type="checkbox" name="plano-acao" value="Estratégia de recuperação" class="rounded text-blue-600 focus:ring-blue-500"><span>Definição de Estratégia de Recuperação de Imagem</span></label>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 required-label" for="plano-detalhado">Detalhes e Próximos Passos do Plano</label>
+                    <textarea id="plano-detalhado" rows="6" placeholder="Descreva os detalhes do plano, incluindo datas, responsáveis, e o status atual de cada ação (Ex: Nota Oficial - Em aprovação pelo Jurídico, Responsável: Maria, Prazo: Hoje às 18h)." class="mt-1 block w-full rounded-md border border-gray-300 p-3" required></textarea>
+                </div>
+            </section>
+
+            <!-- 7. MONITORAMENTO E MÉTRICAS (I) -->
+            <section class="p-6 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-blue-800 mb-4">7. Monitoramento e Métricas Iniciais</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Menções Negativas -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700" for="metricas-mencoes">% de Menções Negativas (Antes/Depois)</label>
+                        <input type="text" id="metricas-mencoes" placeholder="Ex: 5% (Antes) / 45% (Atual)" class="mt-1 block w-full rounded-md border border-gray-300 p-3">
+                    </div>
+                    <!-- Alcance Orgânico -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700" for="metricas-alcance">Alcance Orgânico Perdido/Ganho</label>
+                        <input type="text" id="metricas-alcance" placeholder="Ex: -15.000 (Perda em 24h)" class="mt-1 block w-full rounded-md border border-gray-300 p-3">
+                    </div>
+                    <!-- Volume de Comentários -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700" for="metricas-comentarios">Volume de Comentários Recebidos</label>
+                        <input type="number" id="metricas-comentarios" placeholder="Ex: 530" class="mt-1 block w-full rounded-md border border-gray-300 p-3">
+                    </div>
+                </div>
+
+                <!-- Evolução do Sentimento -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700">Evolução do Sentimento (Avaliação Subjetiva)</label>
+                    <div class="mt-2 flex space-x-4">
+                        <label class="flex items-center space-x-2"><input type="radio" name="sentimento" value="Positivo" class="text-green-600"><span>Positivo</span></label>
+                        <label class="flex items-center space-x-2"><input type="radio" name="sentimento" value="Neutro" class="text-gray-600"><span>Neutro</span></label>
+                        <label class="flex items-center space-x-2"><input type="radio" name="sentimento" value="Negativo" class="text-red-600"><span>Negativo</span></label>
+                        <label class="flex items-center space-x-2"><input type="radio" name="sentimento" value="Misto" class="text-orange-600"><span>Misto/Polarizado</span></label>
+                    </div>
+                </div>
+
+                <!-- Influenciadores Envolvidos -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700" for="influenciadores">Identificação de Influenciadores/Perfis Chave Envolvidos</label>
+                    <input type="text" id="influenciadores" placeholder="@nome, canal, veículo de imprensa" class="mt-1 block w-full rounded-md border border-gray-300 p-3">
+                </div>
+            </section>
+
+            <!-- 8. ENCAMINHAMENTOS FUTUROS (J) & NOTIFICAÇÕES -->
+            <section class="p-6 bg-white rounded-lg border border-gray-200">
+                <h3 class="text-2xl font-bold text-blue-800 mb-4">8. Encaminhamentos Futuros e Prevenção</h3>
+
+                <!-- Sugestões de Ações -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 required-label" for="acoes-sugeridas">Ações Sugeridas / Recomendadas</label>
+                    <textarea id="acoes-sugeridas" rows="4" placeholder="Quais ações de médio/longo prazo são necessárias? Ex: Auditoria interna, Treinamento de porta-vozes, Revisão de processos, etc." class="mt-1 block w-full rounded-md border border-gray-300 p-3" required></textarea>
+                </div>
+
+                <!-- Sugestões de Prevenção -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700" for="sugestoes-prevencao">Sugestões de Prevenção e Melhorias Contínuas</label>
+                    <textarea id="sugestoes-prevencao" rows="4" placeholder="Lições aprendidas e como prevenir recorrências." class="mt-1 block w-full rounded-md border border-gray-300 p-3"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Próximos Responsáveis -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required-label" for="proximos-responsaveis">Próximo(s) Responsável(is) pela Condução</label>
+                        <input type="text" id="proximos-responsaveis" placeholder="Nome/Cargo do próximo ponto focal" class="mt-1 block w-full rounded-md border border-gray-300 p-3" required>
+                    </div>
+
+                    <!-- Notificação aos Gestores -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700" for="email-notificacao">Email para Notificação Imediata de Gestores (Opcional)</label>
+                        <input type="email" id="email-notificacao" placeholder="gestor1@evereste.com.br, gestor2@evereste.com.br" class="mt-1 block w-full rounded-md border border-gray-300 p-3">
+                        <small class="text-xs text-gray-500">Enviar o resumo do Boletim para estes emails.</small>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Botão de Envio -->
+            <div class="flex justify-center pt-8 border-t mt-8">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50">
+                    Registrar Ocorrência e Gerar Relatório
+                </button>
+            </div>
+
+            <!-- Área de Confirmação/Feedback -->
+            <div id="feedback-area" class="mt-8 p-4 bg-yellow-100 border border-yellow-300 rounded-lg hidden">
+                <p class="font-semibold text-lg text-yellow-800">Status do Registro...</p>
+                <p class="text-sm text-yellow-700">Aguardando a submissão do formulário. A simulação de relatório será exibida no console e o registro será salvo no Firestore.</p>
+            </div>
+
+        </form>
+    </div>
+
+    <script type="module">
+        // --- Canvas Global Variables (MANDATORY) ---
+        // Usando a configuração fornecida pelo usuário e as variáveis globais do ambiente
+        const firebaseConfig = JSON.parse(
+            typeof __firebase_config !== 'undefined'
+                ? __firebase_config
+                : JSON.stringify({
+                      apiKey: "AIzaSyCOfikEKa2vST_QWawE3ecSbFQzESl0Ml8",
+                      authDomain: "crise2.firebaseapp.com",
+                      projectId: "crise2",
+                      storageBucket: "crise2.firebasestorage.app",
+                      messagingSenderId: "1011856526708",
+                      appId: "1:1011856526708:web:5366c9e6643f0fad453021"
+                  })
+        );
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
+        // Usamos o projectId como fallback seguro para appId
+        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
+
+        // --- Firebase Imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, Timestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase Initialization Vars ---
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // A. Data e hora do registro (automático)
+            document.getElementById('registro-data-hora').value = new Date().toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' });
+
+            // 1. Initialize Firebase Services
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            setLogLevel('debug'); // Para logs detalhados no console
+
+            // 2. Auth Logic (Autenticação Obrigatória)
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                // Listener para garantir que o userId está definido antes de qualquer operação no Firestore
+                onAuthStateChanged(auth, user => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        console.log("Firebase Auth OK. User ID:", userId);
+                    } else {
+                        // Caso a autenticação falhe ou seja anônima sem sucesso
+                        userId = crypto.randomUUID(); // Fallback para ID temporário
+                        isAuthReady = true;
+                        console.warn("Autenticação falhou ou user deslogado. Usando ID temporário:", userId);
+                    }
+                });
+
+            } catch (error) {
+                console.error("Erro durante a inicialização/autenticação Firebase:", error);
+                isAuthReady = true;
+            }
+
+            // B. Habilita campo 'Outros' para Canal de Detecção
+            const outrosCanalCheck = document.getElementById('canal-outros-check');
+            const outrosCanalText = document.getElementById('canal-outros-text');
+            outrosCanalCheck.addEventListener('change', () => {
+                outrosCanalText.disabled = !outrosCanalCheck.checked;
+                if (outrosCanalCheck.checked) {
+                    outrosCanalText.focus();
+                } else {
+                    outrosCanalText.value = '';
+                }
+            });
+
+            // C. Habilita campo 'Outras' para Classificação
+            const outrasClassificacaoCheck = document.getElementById('classificacao-outras-check');
+            const outrasClassificacaoText = document.getElementById('classificacao-outras-text');
+            outrasClassificacaoCheck.addEventListener('change', () => {
+                outrasClassificacaoText.disabled = !outrasClassificacaoCheck.checked;
+                if (outrasClassificacaoCheck.checked) {
+                    outrasClassificacaoText.focus();
+                } else {
+                    outrasClassificacaoText.value = '';
+                }
+            });
+
+            // G. Habilita campo 'Outros' para Equipe Designada
+            const outrosEquipeCheck = document.getElementById('equipe-outros-check');
+            const outrosEquipeText = document.getElementById('equipe-outros-text');
+            outrosEquipeCheck.addEventListener('change', () => {
+                outrosEquipeText.disabled = !outrosEquipeCheck.checked;
+                if (outrosEquipeCheck.checked) {
+                    outrosEquipeText.focus();
+                } else {
+                    outrosEquipeText.value = '';
+                }
+            });
+        });
+
+        // Função de Envio e Geração de Relatório (AGORA SALVA NO FIRESTORE)
+        window.handleFormSubmission = async function(event) {
+            event.preventDefault();
+
+            if (!isAuthReady || !db || !userId) {
+                console.error("Aguardando inicialização do sistema ou autenticação...");
+                const feedbackArea = document.getElementById('feedback-area');
+                feedbackArea.innerHTML = `<p class="font-semibold text-lg text-red-800">Erro de Inicialização</p><p class="text-sm text-red-700">Aguarde a inicialização da autenticação do Firebase. Tente novamente em segundos.</p>`;
+                feedbackArea.classList.remove('hidden');
+                feedbackArea.classList.remove('bg-yellow-100', 'border-yellow-300');
+                feedbackArea.classList.add('bg-red-100', 'border-red-300');
+                return;
+            }
+
+            // 1. Coleta de Dados
+            const formData = {
+                // Seção 1: Identificação (A)
+                dataRegistro: document.getElementById('registro-data-hora').value,
+                nomeResponsavel: document.getElementById('responsavel-nome').value,
+                cargoResponsavel: document.getElementById('responsavel-cargo').value,
+                contatoResponsavel: document.getElementById('responsavel-contato').value,
+
+                // Seção 2: Ocorrência (B)
+                fatoGerador: document.getElementById('fato-gerador').value,
+                dataOcorrencia: document.getElementById('data-ocorrencia').value,
+                setorEnvolvido: document.getElementById('setor-envolvido').value,
+                canaisDeteccao: Array.from(document.querySelectorAll('input[name="canal-deteccao"]:checked')).map(cb => cb.value).join('; ') + (document.getElementById('canal-outros-check').checked && document.getElementById('canal-outros-text').value ? ' (' + document.getElementById('canal-outros-text').value + ')' : ''),
+                origemCrise: document.querySelector('input[name="origem-crise"]:checked')?.value || 'Não Informado',
+                publicoAfetado: Array.from(document.querySelectorAll('input[name="publico-afetado"]:checked')).map(cb => cb.value).join('; '),
+
+                // Seção 3: Classificação e Impacto (C & D)
+                classificacao: (document.querySelector('input[name="classificacao"]:checked')?.value || 'Não Classificado') + (document.getElementById('classificacao-outras-check').checked && document.getElementById('classificacao-outras-text').value ? ' (' + document.getElementById('classificacao-outras-text').value + ')' : ''),
+                impactoEstimado: Array.from(document.querySelectorAll('input[name="impacto-estimado"]:checked')).map(cb => cb.value).join('; '),
+
+                // Seção 4: Descrição (E)
+                descricaoDetalhada: document.getElementById('descricao-detalhada').value,
+                anexos: document.getElementById('anexos').files.length + ' arquivo(s) anexado(s)',
+
+                // Seção 5: Ações e Equipe (F & G)
+                acoesImediatasLista: Array.from(document.querySelectorAll('input[name="acao-imediata"]:checked')).map(cb => cb.value).join('; '),
+                acoesImediatasLivre: document.getElementById('acoes-livre').value,
+                equipeDesignada: Array.from(document.querySelectorAll('input[name="equipe-designada"]:checked')).map(cb => cb.value).join('; ') + (document.getElementById('equipe-outros-check').checked && document.getElementById('equipe-outros-text').value ? ' (' + document.getElementById('equipe-outros-text').value + ')' : ''),
+
+                // Seção 6: Plano de Ação (H)
+                planoAcaoLista: Array.from(document.querySelectorAll('input[name="plano-acao"]:checked')).map(cb => cb.value).join('; '),
+                planoAcaoDetalhado: document.getElementById('plano-detalhado').value,
+
+                // Seção 7: Métricas (I)
+                metricasMencoes: document.getElementById('metricas-mencoes').value || 'Não Aplicável/Coletado',
+                metricasAlcance: document.getElementById('metricas-alcance').value || 'Não Aplicável/Coletado',
+                metricasComentarios: document.getElementById('metricas-comentarios').value || 'Não Aplicável/Coletado',
+                sentimento: document.querySelector('input[name="sentimento"]:checked')?.value || 'Não Avaliado',
+                influenciadores: document.getElementById('influenciadores').value || 'Nenhum Identificado',
+
+                // Seção 8: Encaminhamentos (J)
+                acoesSugeridas: document.getElementById('acoes-sugeridas').value,
+                sugestoesPrevencao: document.getElementById('sugestoes-prevencao').value,
+                proximosResponsaveis: document.getElementById('proximos-responsaveis').value,
+                emailNotificacao: document.getElementById('email-notificacao').value || 'Nenhum',
+            };
+
+            // 2. Salvar no Firestore
+            try {
+                // Prepara a coleção privada para registros de crise
+                const collectionPath = `artifacts/${appId}/users/${userId}/boletins_crise`;
+                const crisisCollectionRef = collection(db, collectionPath);
+
+                // 3. Adiciona metadados de registro
+                const formDataToSave = {
+                    ...formData,
+                    timestamp: Timestamp.fromDate(new Date()),
+                    registeredByUid: userId,
+                    appId: appId,
+                    status: 'Em Análise' // Adiciona um status inicial
+                };
+
+                const docRef = await addDoc(crisisCollectionRef, formDataToSave);
+                console.log("Boletim de Ocorrência salvo com sucesso no Firestore. ID do documento:", docRef.id);
+                
+                // 4. Feedback para o usuário
+                const feedbackArea = document.getElementById('feedback-area');
+                feedbackArea.innerHTML = `
+                    <p class="font-semibold text-lg text-green-800">Boletim Registrado com Sucesso!</p>
+                    <p class="text-sm text-green-700">A ocorrência foi salva no Firestore (ID: **${docRef.id}**). Os dados estão prontos para o acompanhamento e a base do Relatório Automático foi gerada no console (F12).</p>
+                `;
+                feedbackArea.classList.remove('hidden', 'bg-yellow-100', 'border-yellow-300');
+                feedbackArea.classList.add('bg-green-100', 'border-green-300');
+
+            } catch (error) {
+                console.error("Erro ao salvar o Boletim de Ocorrência no Firestore:", error);
+                const feedbackArea = document.getElementById('feedback-area');
+                feedbackArea.innerHTML = `
+                    <p class="font-semibold text-lg text-red-800">Erro ao Registrar o Boletim!</p>
+                    <p class="text-sm text-red-700">Ocorreu um erro ao tentar salvar no banco de dados. Verifique a console (F12) para detalhes. (Erro: ${error.message})</p>
+                `;
+                feedbackArea.classList.remove('hidden', 'bg-yellow-100', 'border-yellow-300');
+                feedbackArea.classList.add('bg-red-100', 'border-red-300');
+            }
+
+            // 5. Simulação de Geração de Relatório (MANTIDO NO CONSOLE)
+            console.log("--- RELATÓRIO AUTOMÁTICO DE GESTÃO DE CRISE - INSTITUTO EVERESTE ---");
+            console.log("\n[1. RESUMO EXECUTIVO]");
+            console.log("Fato Gerador:", formData.fatoGerador.substring(0, 100) + '...');
+            console.log("Classificação de Risco:", formData.classificacao);
+            console.log("Principais Impactos Estimados:", formData.impactoEstimado);
+            console.log("Status:", formData.planoAcaoLista.length > 0 ? "Em Execução" : "Registro Inicial");
+            console.log("\n[2. DETALHES DA OCORRÊNCIA]");
+            console.log("Data/Hora Ocorrido:", formData.dataOcorrencia);
+            console.log("Origem:", formData.origemCrise);
+            console.log("Setor Envolvido:", formData.setorEnvolvido);
+            console.log("Público Afetado:", formData.publicoAfetado);
+            console.log("\n[3. AÇÕES INICIAIS E PLANO]");
+            console.log("Ações Imediatas:", formData.acoesImediatasLista, formData.acoesImediatasLivre);
+            console.log("Equipe:", formData.equipeDesignada);
+            console.log("Plano em Execução:", formData.planoAcaoDetalhado.substring(0, 100) + '...');
+            console.log("\n[4. MÉTRICAS INICIAIS]");
+            console.log("Menções Negativas:", formData.metricasMencoes);
+            console.log("Sentimento:", formData.sentimento);
+            console.log("\n[5. ENCAMINHAMENTOS]");
+            console.log("Recomendações:", formData.acoesSugeridas.substring(0, 100) + '...');
+            console.log("Próximo Responsável:", formData.proximosResponsaveis);
+            console.log("\n[6. METADADOS]");
+            console.log("Registrado por:", formData.nomeResponsavel, `(${formData.cargoResponsavel})`);
+            console.log("Data do Registro:", formData.dataRegistro);
+            console.log("--- FIM DO RELATÓRIO SIMULADO ---");
+        }
+    </script>
+</body>
+</html>
