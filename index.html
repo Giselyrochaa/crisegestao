@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { LogOut, BookOpen, BarChart3, Settings, Table, PlusSquare, LineChart, CornerDownRight, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 // IMPORTAÇÕES DO FIREBASE (necessárias para salvar o formulário)
@@ -25,7 +24,7 @@ const SIMULATED_2FA_CODE = '123456'; // Código fixo para simulação
 
 // --- Componente do Formulário de Registro de Crise (Boletim de Ocorrência) ---
 const CrisisForm = () => {
-    // 1. Estados para o formulário (apenas um subconjunto para simplificar o estado inicial)
+    // 1. Estados para o formulário 
     const [formData, setFormData] = useState({
         nomeResponsavel: '',
         cargoResponsavel: '',
@@ -33,7 +32,10 @@ const CrisisForm = () => {
         fatoGerador: '',
         dataOcorrencia: '',
         setorEnvolvido: '',
-        // Campos complexos serão tratados abaixo ou através de eventos específicos
+        descricaoDetalhada: '',
+        acoesImediatasLivre: '',
+        equipeDesignada: '',
+        planoDetalhado: '',
     });
     const [loading, setLoading] = useState(false);
     const [feedback, setFeedback] = useState(null);
@@ -43,7 +45,10 @@ const CrisisForm = () => {
 
     useEffect(() => {
         // Preenche a data e hora do registro automaticamente
-        document.getElementById('registro-data-hora').value = new Date().toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' });
+        const input = document.getElementById('registro-data-hora');
+        if (input) {
+             input.value = new Date().toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' });
+        }
     }, []);
 
     const handleChange = (e) => {
@@ -64,6 +69,7 @@ const CrisisForm = () => {
                 setClassificacao(value);
             }
         } else {
+            // Lida com todos os campos de texto/data em formData
             setFormData(prev => ({ ...prev, [id]: value }));
         }
     };
@@ -73,13 +79,21 @@ const CrisisForm = () => {
         setLoading(true);
         setFeedback(null);
 
+        if (!classificacao || impactoEstimado.length === 0 || canaisDeteccao.length === 0) {
+             setFeedback({
+                type: 'error',
+                message: `Campos de seleção obrigatórios (Classificação, Impacto e Canal) não foram preenchidos.`,
+            });
+            setLoading(false);
+            return;
+        }
+
         const dataToSave = {
             ...formData,
             dataRegistro: document.getElementById('registro-data-hora').value,
             canaisDeteccao: canaisDeteccao.join('; '),
             classificacao: classificacao,
             impactoEstimado: impactoEstimado.join('; '),
-            // ... coletar todos os outros campos do formulário (simplificado aqui para brevity)
             timestamp: new Date().toISOString(),
             registeredByUid: simulatedFirebase.userId,
             appId: simulatedFirebase.appId,
@@ -88,7 +102,8 @@ const CrisisForm = () => {
 
         try {
             // Simulação de salvamento no Firestore
-            const docRef = await simulatedFirebase.db.collection(`artifacts/${simulatedFirebase.appId}/users/${simulatedFirebase.userId}/boletins_crise`).addDoc(dataToSave);
+            const collectionPath = `artifacts/${simulatedFirebase.appId}/users/${simulatedFirebase.userId}/boletins_crise`;
+            const docRef = await simulatedFirebase.db.collection(collectionPath).addDoc(dataToSave);
             
             setFeedback({
                 type: 'success',
@@ -96,7 +111,11 @@ const CrisisForm = () => {
             });
 
             // Resetar formulário após sucesso (opcional)
-            setFormData({nomeResponsavel: '', cargoResponsavel: '', contatoResponsavel: '', fatoGerador: '', dataOcorrencia: '', setorEnvolvido: ''});
+            setFormData({
+                nomeResponsavel: '', cargoResponsavel: '', contatoResponsavel: '', 
+                fatoGerador: '', dataOcorrencia: '', setorEnvolvido: '',
+                descricaoDetalhada: '', acoesImediatasLivre: '', equipeDesignada: '', planoDetalhado: ''
+            });
             setCanaisDeteccao([]);
             setClassificacao('');
             setImpactoEstimado([]);
@@ -139,7 +158,7 @@ const CrisisForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className={requiredLabelClass} htmlFor="registro-data-hora">Data e Hora do Registro</label>
-                            <input type="text" id="registro-data-hora" className={`${inputClass} bg-gray-100`} readOnly value="" />
+                            <input type="text" id="registro-data-hora" className={`${inputClass} bg-gray-100`} readOnly defaultValue="" />
                         </div>
                         <div>
                             <label className={requiredLabelClass} htmlFor="nomeResponsavel">Nome do Responsável</label>
@@ -228,7 +247,7 @@ const CrisisForm = () => {
 
                     <div className="mb-6">
                         <label className={requiredLabelClass} htmlFor="descricaoDetalhada">Descrição Detalhada do Ocorrido</label>
-                        <textarea id="descricaoDetalhada" rows="6" placeholder="Inclua o contexto, a repercussão inicial e a linha do tempo." className={inputClass} required></textarea>
+                        <textarea id="descricaoDetalhada" rows="6" value={formData.descricaoDetalhada} onChange={handleChange} placeholder="Inclua o contexto, a repercussão inicial e a linha do tempo." className={inputClass} required></textarea>
                     </div>
 
                     <div>
@@ -257,16 +276,16 @@ const CrisisForm = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className={requiredLabelClass} htmlFor="acoesImediatasLivre">Ações Imediatas Tomadas</label>
-                            <textarea id="acoesImediatasLivre" rows="3" placeholder="Ex: Remoção de conteúdo, acionamento jurídico, nota preliminar." className={inputClass} required></textarea>
+                            <textarea id="acoesImediatasLivre" rows="3" value={formData.acoesImediatasLivre} onChange={handleChange} placeholder="Ex: Remoção de conteúdo, acionamento jurídico, nota preliminar." className={inputClass} required></textarea>
                         </div>
                         <div>
                             <label className={requiredLabelClass} htmlFor="equipeDesignada">Equipe Designada</label>
-                            <input type="text" id="equipeDesignada" placeholder="Ex: Porta-voz, Jurídico, Comunicação Externa" className={inputClass} required />
+                            <input type="text" id="equipeDesignada" value={formData.equipeDesignada} onChange={handleChange} placeholder="Ex: Porta-voz, Jurídico, Comunicação Externa" className={inputClass} required />
                         </div>
                     </div>
                     <div className="mt-6">
                          <label className={requiredLabelClass} htmlFor="planoDetalhado">Plano de Ação em Execução (Detalhes)</label>
-                         <textarea id="planoDetalhado" rows="4" placeholder="Descreva os detalhes do plano, incluindo datas, responsáveis e o status atual." className={inputClass} required></textarea>
+                         <textarea id="planoDetalhado" rows="4" value={formData.planoDetalhado} onChange={handleChange} placeholder="Descreva os detalhes do plano, incluindo datas, responsáveis e o status atual." className={inputClass} required></textarea>
                     </div>
                 </section>
 
@@ -617,3 +636,4 @@ const App = () => {
 };
 
 export default App;
+
