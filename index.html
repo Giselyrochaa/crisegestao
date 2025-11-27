@@ -219,7 +219,7 @@
                             <p class="text-slate-500 text-sm">Monitoramento em tempo real da reputação.</p>
                         </div>
                         <div class="flex gap-3">
-                            <!-- Botão Limpar Tudo REMOVIDO conforme solicitado -->
+                            <!-- Botão Limpar Tudo REMOVIDO DAQUI -->
                             <button onclick="Router.navigate('register')" class="btn btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> Nova Ocorrência</button>
                             <button onclick="ReportsService.exportFullReport()" class="btn btn-secondary"><i data-lucide="download" class="w-4 h-4"></i> Relatório PDF</button>
                         </div>
@@ -372,22 +372,35 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="input-label">Público Afetado</label>
-                                        <input type="text" id="reg-publico" class="input-field" placeholder="Ex: Clientes, Colaboradores">
+                                        <label class="input-label">Reincidência?</label>
+                                        <div class="flex gap-4 mt-2">
+                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="reincidencia" value="Sim" class="text-brand-600 focus:ring-brand-500"> <span>Sim</span></label>
+                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="reincidencia" value="Não" class="text-brand-600 focus:ring-brand-500" checked> <span>Não</span></label>
+                                        </div>
                                     </div>
                                 </div>
                                 
                                 <div>
+                                    <label class="input-label mb-2">Público Afetado (Múltipla Escolha)</label>
+                                    <div class="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="publico" value="Colaboradores" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Colaboradores</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="publico" value="Parceiros" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Parceiros</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="publico" value="Clientes" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Clientes</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="publico" value="Sociedade em Geral" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Sociedade em Geral</span></label>
+                                    </div>
+                                </div>
+
+                                <div>
                                     <label class="input-label mb-2">Canais de Detecção</label>
                                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="E-mail" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">E-mail</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Instagram" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Instagram</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="LinkedIn" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">LinkedIn</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Imprensa" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Imprensa</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Glassdoor" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Glassdoor</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="LinkedIn" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">LinkedIn</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="WhatsApp" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">WhatsApp</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Google" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Google</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Glassdoor" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Glassdoor</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Interno" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Interno</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="E-mail" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">E-mail</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Youtube" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Youtube</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Outros" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Outros</span></label>
                                     </div>
                                 </div>
@@ -406,7 +419,7 @@
                                         <option value="Potencial">2 - Potencial</option>
                                         <option value="Moderada">3 - Moderada</option>
                                         <option value="Grave">4 - Grave</option>
-                                        <option value="Extrema">5 - Extrema / Reputacional</option>
+                                        <option value="Extrema / Reputacional">5 - Reputacional Extrema</option>
                                     </select>
                                 </div>
                                 <div>
@@ -434,32 +447,37 @@
                             <h3 class="font-bold text-brand-800 border-b border-slate-100 pb-3 mb-4 flex items-center"><i data-lucide="shield" class="w-5 h-5 mr-2"></i> 4. Resposta e Ações</h3>
                             <div class="space-y-5">
                                 <div>
-                                    <label class="input-label required-label">Descrição Detalhada</label>
+                                    <label class="input-label required-label">Descrição Objetiva do Ocorrido</label>
                                     <textarea id="reg-desc" rows="4" class="input-field resize-none" placeholder="Contexto completo, envolvidos e timeline inicial..." required></textarea>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label class="input-label">Ações Imediatas</label>
-                                        <textarea id="reg-acoes" rows="3" class="input-field resize-none" placeholder="Ex: Remoção de conteúdo, contato jurídico..."></textarea>
+                                        <label class="input-label">Medidas Tomadas Até o Momento</label>
+                                        <textarea id="reg-acoes" rows="3" class="input-field resize-none" placeholder="Ex: remoção de conteúdo, nota oficial preliminar, resposta direta ao público afetado, contenção..."></textarea>
                                     </div>
                                     <div>
-                                        <label class="input-label">Plano de Ação</label>
-                                        <textarea id="reg-plano" rows="3" class="input-field resize-none" placeholder="Próximos passos estratégicos..."></textarea>
+                                        <label class="input-label">Plano de Ação em Execução</label>
+                                        <textarea id="reg-plano" rows="3" class="input-field resize-none" placeholder="Ex: Elaboração de nota, reunião extraordinária..."></textarea>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="input-label mb-2">Equipe Designada</label>
+                                    <div class="flex flex-wrap gap-3">
+                                        <label class="inline-flex items-center px-3 py-1.5 border rounded-lg text-sm bg-white hover:bg-slate-50 cursor-pointer"><input type="checkbox" name="equipe" value="Porta-voz" class="mr-2 text-brand-600"> Porta-voz</label>
+                                        <label class="inline-flex items-center px-3 py-1.5 border rounded-lg text-sm bg-white hover:bg-slate-50 cursor-pointer"><input type="checkbox" name="equipe" value="Comunicação externa" class="mr-2 text-brand-600"> Comunicação externa</label>
+                                        <label class="inline-flex items-center px-3 py-1.5 border rounded-lg text-sm bg-white hover:bg-slate-50 cursor-pointer"><input type="checkbox" name="equipe" value="Jurídico" class="mr-2 text-brand-600"> Jurídico</label>
+                                        <label class="inline-flex items-center px-3 py-1.5 border rounded-lg text-sm bg-white hover:bg-slate-50 cursor-pointer"><input type="checkbox" name="equipe" value="Monitoramento de mídia" class="mr-2 text-brand-600"> Monitoramento de mídia</label>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label class="input-label">Equipe Designada</label>
-                                        <input type="text" id="reg-equipe" class="input-field" placeholder="Ex: João (Jurídico), Maria (Coms)">
+                                        <label class="input-label">Monitoramento e Métricas</label>
+                                        <textarea id="reg-metricas" rows="2" class="input-field" placeholder="Ex: Reunião com stakeholders, campanha de recuperação..."></textarea>
                                     </div>
                                     <div>
-                                        <label class="input-label">Métricas Iniciais</label>
-                                        <input type="text" id="reg-metricas" class="input-field" placeholder="Ex: -15% engajamento">
+                                        <label class="input-label">Encaminhamentos Futuros</label>
+                                        <textarea id="reg-futuro" rows="2" class="input-field" placeholder="Ex: Crescimento de menções negativas, perda de seguidores..."></textarea>
                                     </div>
-                                </div>
-                                <div>
-                                    <label class="input-label">Encaminhamentos Futuros</label>
-                                    <input type="text" id="reg-futuro" class="input-field" placeholder="Ex: Treinamento de equipe">
                                 </div>
                             </div>
                         </div>
@@ -468,7 +486,7 @@
                         <div class="flex justify-end gap-4 pt-4">
                             <button type="button" onclick="Router.navigate('dashboard')" class="btn btn-secondary px-6">Cancelar</button>
                             <button type="submit" class="btn btn-primary px-8 transform hover:-translate-y-0.5">
-                                <i data-lucide="save" class="w-4 h-4"></i> Salvar Boletim Seguro
+                                <i data-lucide="save" class="w-4 h-4"></i> Salvar Boletim
                             </button>
                         </div>
                     </form>
@@ -513,6 +531,9 @@
                                 <p class="font-bold text-slate-800">Administrador</p>
                                 <p class="text-sm text-slate-500">admin@evereste.org.br</p>
                             </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-slate-100">
+                            <button onclick="App.askClearAll()" class="btn btn-secondary text-red-600 hover:bg-red-50 border-red-200 w-full justify-start"><i data-lucide="trash-2" class="w-4 h-4"></i> Limpar Banco de Dados Local</button>
                         </div>
                     </div>
                 </div>
@@ -643,7 +664,7 @@
         };
 
         const DB = {
-            data: [], // Inicia VAZIO conforme solicitado
+            data: [], 
             add: (record) => {
                 DB.data.unshift(record);
                 DB.data.sort((a, b) => new Date(b.data) - new Date(a.data)); 
@@ -663,6 +684,22 @@
                 App.updateDashboard();
                 Router.navigate('dashboard');
             },
+            askClearAll: () => {
+                Modal.open("Apagar Tudo", "Isso excluirá PERMANENTEMENTE todos os registros. Tem certeza?", () => {
+                    DB.data = [];
+                    App.renderTable();
+                    App.updateDashboard();
+                    Toast.show("Todos os dados foram apagados.", "warning");
+                });
+            },
+            askDeleteRow: (id) => {
+                Modal.open("Excluir Registro", "Deseja apagar este boletim de ocorrência?", () => {
+                    DB.delete(id);
+                    App.renderTable();
+                    App.updateDashboard();
+                    Toast.show('Registro removido.', 'success');
+                });
+            },
             submitForm: (e) => {
                 e.preventDefault();
                 const newRec = {
@@ -674,10 +711,11 @@
                     status: 'Nova',
                     setor: document.getElementById('reg-setor').value,
                     origem: document.getElementById('reg-origem').value,
-                    publico: document.getElementById('reg-publico').value,
+                    reincidencia: document.querySelector('input[name="reincidencia"]:checked').value,
+                    publico: Array.from(document.querySelectorAll('input[name="publico"]:checked')).map(c=>c.value).join(', '),
                     desc: document.getElementById('reg-desc').value,
                     acoes: document.getElementById('reg-acoes').value,
-                    equipe: document.getElementById('reg-equipe').value,
+                    equipe: Array.from(document.querySelectorAll('input[name="equipe"]:checked')).map(c=>c.value).join(', '),
                     plano: document.getElementById('reg-plano').value,
                     metricas: document.getElementById('reg-metricas').value,
                     futuro: document.getElementById('reg-futuro').value,
@@ -726,14 +764,6 @@
                 document.getElementById('table-counter').innerText = `${DB.data.length} registros encontrados`;
                 lucide.createIcons();
             },
-            askDeleteRow: (id) => {
-                Modal.open("Excluir Registro", "Deseja apagar este boletim de ocorrência?", () => {
-                    DB.delete(id);
-                    App.renderTable();
-                    App.updateDashboard();
-                    Toast.show('Registro removido.', 'success');
-                });
-            },
             sort: (field) => {
                 DB.data.reverse(); 
                 App.renderTable();
@@ -764,7 +794,7 @@
                                 labels: ['Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
                                 datasets: [{
                                     label: 'Ocorrências',
-                                    data: [0, 0, 0, 0, 0, DB.data.length], // Zerado inicialmente
+                                    data: [0, 0, 0, 0, 0, DB.data.length], 
                                     borderColor: '#2563eb',
                                     backgroundColor: 'rgba(37, 99, 235, 0.1)',
                                     fill: true,
@@ -802,11 +832,11 @@
                         App.charts.channels = new Chart(ctxC, {
                             type: 'bar',
                             data: {
-                                labels: ['Instagram', 'LinkedIn', 'Interno', 'WhatsApp', 'Glassdoor'],
+                                labels: ['Instagram', 'LinkedIn', 'Imprensa', 'WhatsApp', 'Glassdoor', 'Youtube'],
                                 datasets: [{
                                     label: 'Ocorrências',
-                                    data: [0,0,0,0,0], // Zerado inicialmente
-                                    backgroundColor: ['#E1306C', '#0077b5', '#2563eb', '#25D366', '#0caa41']
+                                    data: [0,0,0,0,0,0], 
+                                    backgroundColor: ['#E1306C', '#0077b5', '#1d4ed8', '#25D366', '#0caa41', '#FF0000']
                                 }]
                             },
                             options: commonOptions
@@ -820,7 +850,7 @@
                             data: {
                                 labels: ['Reputacional', 'Financeiro', 'Jurídico'],
                                 datasets: [{
-                                    data: [0, 0, 0], // Zerado inicialmente
+                                    data: [0, 0, 0], 
                                     backgroundColor: ['#8b5cf6', '#10b981', '#f59e0b']
                                 }]
                             },
@@ -868,11 +898,12 @@
                 doc.text(`Data: ${new Date(r.data).toLocaleString()}`, 150, y);
                 y += 10;
                 addBlock('1. Fato Gerador', r.fato);
-                addBlock('2. Detalhes de Registro', `Responsável: ${r.resp}\nSetor: ${r.setor || '-'}\nOrigem: ${r.origem || '-'}\nPúblico: ${r.publico || '-'}`);
+                addBlock('2. Detalhes de Registro', `Responsável: ${r.resp}\nSetor: ${r.setor || '-'}\nOrigem: ${r.origem || '-'}\nReincidência: ${r.reincidencia}\nPúblico Afetado: ${r.publico || '-'}`);
                 addBlock('3. Classificação de Risco', `Nível: ${r.class}\nCanais: ${r.canais ? r.canais.join(', ') : '-'}\nImpacto: ${r.impacto ? r.impacto.join(', ') : '-'}`);
                 addBlock('4. Descrição Completa', r.desc);
-                addBlock('5. Ações e Resposta', `Imediatas: ${r.acoes || '-'}\nEquipe: ${r.equipe || '-'}\nPlano: ${r.plano || '-'}`);
-                addBlock('6. Métricas e Futuro', `Métricas: ${r.metricas || '-'}\nEncaminhamentos: ${r.futuro || '-'}`);
+                addBlock('5. Ações e Resposta', `Medidas Tomadas: ${r.acoes || '-'}\nEquipe Designada: ${r.equipe || '-'}\nPlano de Ação: ${r.plano || '-'}`);
+                addBlock('6. Monitoramento e Métricas', `Métricas: ${r.metricas || '-'}`);
+                addBlock('7. Encaminhamentos Futuros', `Encaminhamentos: ${r.futuro || '-'}`);
                 doc.setFontSize(8);
                 doc.setTextColor(150);
                 doc.text(`Documento confidencial gerado em ${new Date().toLocaleString()}`, 14, 285);
