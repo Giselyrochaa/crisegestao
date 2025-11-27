@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -45,6 +46,12 @@
         .btn-secondary { @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-sm; }
         .btn-danger { @apply bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20; }
         
+        /* Modal Overlay */
+        .modal-overlay { @apply fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none; }
+        .modal-overlay.show { @apply opacity-100 pointer-events-auto; }
+        .modal-content { @apply bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl transform transition-all duration-300 scale-95 opacity-0; }
+        .modal-overlay.show .modal-content { @apply scale-100 opacity-100; }
+
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -66,9 +73,27 @@
     <!-- NOTIFICAÇÕES -->
     <div id="toast-container"></div>
 
+    <!-- MODAL DE CONFIRMAÇÃO -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="p-3 bg-red-100 rounded-full text-red-600">
+                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900" id="modal-title">Confirmar Ação</h3>
+                    <p class="text-sm text-slate-500" id="modal-desc">Você tem certeza que deseja prosseguir?</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="Modal.close()" class="btn btn-secondary">Cancelar</button>
+                <button id="modal-confirm-btn" class="btn btn-danger">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 1. TELA DE LOGIN (Protegida) -->
     <div id="login-view" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        <!-- Background Decorativo -->
         <div class="absolute inset-0 z-0 opacity-10 bg-[radial-gradient(#2563eb_1px,transparent_1px)] [background-size:16px_16px]"></div>
         
         <div class="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/50 z-10 fade-in">
@@ -194,6 +219,7 @@
                             <p class="text-slate-500 text-sm">Monitoramento em tempo real da reputação.</p>
                         </div>
                         <div class="flex gap-3">
+                            <!-- Botão Limpar Tudo REMOVIDO conforme solicitado -->
                             <button onclick="Router.navigate('register')" class="btn btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> Nova Ocorrência</button>
                             <button onclick="ReportsService.exportFullReport()" class="btn btn-secondary"><i data-lucide="download" class="w-4 h-4"></i> Relatório PDF</button>
                         </div>
@@ -218,14 +244,14 @@
                         <div class="card p-5 border-l-4 border-l-emerald-500">
                             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Resolvidas (Mês)</p>
                             <div class="mt-2 flex justify-between items-end">
-                                <span class="text-3xl font-bold text-slate-900">12</span>
+                                <span class="text-3xl font-bold text-slate-900" id="kpi-resolved">0</span>
                                 <span class="text-emerald-600 bg-emerald-50 p-1.5 rounded-lg"><i data-lucide="check-circle-2" class="w-5 h-5"></i></span>
                             </div>
                         </div>
                         <div class="card p-5 border-l-4 border-l-amber-500">
                             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Índice de Risco</p>
                             <div class="mt-2 flex justify-between items-end">
-                                <span class="text-3xl font-bold text-slate-900">3.2</span>
+                                <span class="text-3xl font-bold text-slate-900" id="kpi-risk">0.0</span>
                                 <span class="text-amber-600 bg-amber-50 p-1.5 rounded-lg"><i data-lucide="bar-chart-3" class="w-5 h-5"></i></span>
                             </div>
                         </div>
@@ -359,6 +385,7 @@
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Imprensa" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Imprensa</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="WhatsApp" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">WhatsApp</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Google" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Google</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Glassdoor" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Glassdoor</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Interno" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Interno</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="E-mail" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">E-mail</span></label>
                                         <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Outros" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Outros</span></label>
@@ -496,47 +523,28 @@
 
     <!-- LÓGICA JAVASCRIPT (SEGURANÇA, DADOS E RENDERIZAÇÃO) -->
     <script>
-        /* ================================================================
-           CORE DO SISTEMA
-           Nota: Em produção, segredos estariam no backend.
-           Aqui usamos hashes para simular segurança no frontend.
-           ================================================================
-        */
-
-        // 1. SERVIÇO DE SEGURANÇA E UTILITÁRIOS
         const Security = {
-            // Simulação de Hash (SHA256) para não expor senha em texto plano
-            // Hash de "Evereste@2025" (apenas ilustrativo para este demo)
-            PASS_HASH: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // Hash fake para demo funcional
-            
+            PASS_HASH: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // Hash fake para demo
             sanitize: (str) => {
                 if (!str) return '';
                 const div = document.createElement('div');
                 div.textContent = str;
                 return div.innerHTML;
             },
-
             hash: async (message) => {
-                // Implementação simples de hash para demo
-                // Em produção real use crypto.subtle
                 return message === "Evereste@2025" ? Security.PASS_HASH : "invalid";
             }
         };
 
-        // 2. SERVIÇO DE NOTIFICAÇÃO (TOAST)
         const Toast = {
             show: (message, type = 'success') => {
                 const container = document.getElementById('toast-container');
                 const toast = document.createElement('div');
-                
                 let icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'alert-circle' : 'info');
-                
                 toast.className = `toast toast-${type}`;
                 toast.innerHTML = `<i data-lucide="${icon}" class="w-5 h-5"></i> ${Security.sanitize(message)}`;
-                
                 container.appendChild(toast);
                 lucide.createIcons();
-                
                 requestAnimationFrame(() => toast.classList.add('show'));
                 setTimeout(() => {
                     toast.classList.remove('show');
@@ -545,28 +553,38 @@
             }
         };
 
-        // 3. SERVIÇO DE AUTENTICAÇÃO
+        const Modal = {
+            callback: null,
+            open: (title, desc, confirmCallback) => {
+                document.getElementById('modal-title').innerText = title;
+                document.getElementById('modal-desc').innerText = desc;
+                Modal.callback = confirmCallback;
+                document.getElementById('confirm-modal').classList.add('show');
+            },
+            close: () => {
+                document.getElementById('confirm-modal').classList.remove('show');
+                Modal.callback = null;
+            }
+        };
+
+        document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+            if(Modal.callback) Modal.callback();
+            Modal.close();
+        });
+
         const AuthService = {
             state: { step: 1 },
-            
             login: async (e) => {
                 e.preventDefault();
-                
                 if (AuthService.state.step === 1) {
                     const email = document.getElementById('email').value;
                     const pass = document.getElementById('password').value;
-                    
-                    // Verifica se é e-mail corporativo (mock)
                     if (!email.endsWith('@evereste.org.br')) {
                         Toast.show("Acesso permitido apenas para e-mails corporativos.", "error");
                         return;
                     }
-
-                    // Validação de Senha (Simulada com Hash)
                     const passHash = await Security.hash(pass);
-                    
                     if (passHash === Security.PASS_HASH) {
-                        // Bloqueia inputs e mostra 2FA
                         document.getElementById('email').disabled = true;
                         document.getElementById('password').disabled = true;
                         document.getElementById('2fa-container').classList.remove('hidden');
@@ -577,7 +595,6 @@
                         Toast.show("Credenciais inválidas.", "error");
                     }
                 } else {
-                    // Step 2: 2FA
                     const code = document.getElementById('2fa-code').value;
                     if (code === "123456") {
                         sessionStorage.setItem('auth_token', 'secure_session_' + Date.now());
@@ -588,18 +605,14 @@
                     }
                 }
             },
-
             logout: () => {
-                if(confirm("Deseja encerrar sua sessão segura?")) {
+                Modal.open("Encerrar Sessão", "Deseja realmente sair do sistema?", () => {
                     sessionStorage.removeItem('auth_token');
                     window.location.reload();
-                }
-            },
-
-            check: () => !!sessionStorage.getItem('auth_token')
+                });
+            }
         };
 
-        // 4. ROTEAMENTO E UI
         const Router = {
             init: () => {
                 document.getElementById('login-view').classList.add('hidden');
@@ -607,21 +620,11 @@
                 lucide.createIcons();
                 App.init();
             },
-
             navigate: (viewId) => {
-                // Hide all views first
                 document.querySelectorAll('.view-page').forEach(el => el.classList.add('hidden'));
-                
-                // Find and show target view
                 const target = document.getElementById(`view-${viewId}`);
-                if (target) {
-                    target.classList.remove('hidden');
-                } else {
-                    console.error(`View not found: view-${viewId}`);
-                    return;
-                }
+                if (target) target.classList.remove('hidden');
                 
-                // Atualiza Sidebar
                 document.querySelectorAll('.nav-item').forEach(el => {
                     el.classList.remove('bg-slate-800', 'text-white');
                     el.classList.add('text-slate-300');
@@ -633,49 +636,35 @@
                 }
 
                 if(viewId === 'dashboard') App.updateDashboard();
-                // Ensure charts update if visible
                 if(viewId === 'dashboard' || viewId === 'charts') {
                     setTimeout(() => App.updateDashboard(), 100);
                 }
             }
         };
 
-        // 5. SERVIÇO DE DADOS (MOCK DATABASE)
         const DB = {
-            data: [
-                { id: 'BO-2025-001', data: '2025-11-25T10:00', fato: 'Postagem ofensiva', resp: 'Gisely Rocha', class: 'Extrema', status: 'Em Análise', setor: 'MKT', desc: 'Postagem viralizou negativamente.', acoes: 'Remoção imediata.', impacto: ['Reputacional'], canais: ['Instagram'] },
-                { id: 'BO-2025-002', data: '2025-11-20T14:30', fato: 'Queda de sistema interno', resp: 'Vera Nascimento', class: 'Moderada', status: 'Resolvido', setor: 'TI', desc: 'Sistema indisponível por 2h.', acoes: 'Reinício de servidor.', impacto: ['Operacional'], canais: ['Interno'] }
-            ],
-            
+            data: [], // Inicia VAZIO conforme solicitado
             add: (record) => {
                 DB.data.unshift(record);
-                DB.data.sort((a, b) => new Date(b.data) - new Date(a.data)); // Sort temporal
+                DB.data.sort((a, b) => new Date(b.data) - new Date(a.data)); 
             },
-            
             delete: (id) => {
                 DB.data = DB.data.filter(r => r.id !== id);
             }
         };
 
-        // 6. APLICAÇÃO PRINCIPAL
         const App = {
             charts: {},
-
             init: () => {
-                // Data atual no form
                 const now = new Date();
                 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
                 document.getElementById('reg-data').value = now.toISOString().slice(0,16);
-                
                 App.renderTable();
                 App.updateDashboard();
                 Router.navigate('dashboard');
             },
-
             submitForm: (e) => {
                 e.preventDefault();
-                
-                // Coleta de dados segura
                 const newRec = {
                     id: `BO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*10000)).padStart(4,'0')}`,
                     data: document.getElementById('reg-data').value || document.getElementById('reg-data-ocorrido').value,
@@ -683,7 +672,6 @@
                     resp: document.getElementById('reg-resp').value,
                     class: document.getElementById('reg-classificacao').value,
                     status: 'Nova',
-                    // Campos detalhados
                     setor: document.getElementById('reg-setor').value,
                     origem: document.getElementById('reg-origem').value,
                     publico: document.getElementById('reg-publico').value,
@@ -696,27 +684,20 @@
                     impacto: Array.from(document.querySelectorAll('input[name="impacto"]:checked')).map(c=>c.value),
                     canais: Array.from(document.querySelectorAll('input[name="canal"]:checked')).map(c=>c.value)
                 };
-
                 DB.add(newRec);
                 Toast.show(`Ocorrência ${newRec.id} registrada com sucesso.`);
-                
                 e.target.reset();
-                // Reset data
                 const now = new Date();
                 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
                 document.getElementById('reg-data').value = now.toISOString().slice(0,16);
-
                 App.renderTable();
                 App.updateDashboard();
                 Router.navigate('list');
             },
-
             renderTable: () => {
                 const tbody = document.getElementById('table-body');
                 tbody.innerHTML = '';
-                
                 const term = document.getElementById('search-input').value.toLowerCase();
-
                 DB.data.filter(r => 
                     r.fato.toLowerCase().includes(term) || 
                     r.id.toLowerCase().includes(term) ||
@@ -724,13 +705,10 @@
                 ).forEach(row => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-                    
-                    // Badge lógica
                     let badge = 'bg-slate-100 text-slate-600';
                     if(row.class.includes('Extrema')) badge = 'bg-red-100 text-red-700 ring-1 ring-red-600/20';
                     else if(row.class.includes('Grave')) badge = 'bg-orange-100 text-orange-700 ring-1 ring-orange-600/20';
                     else if(row.class.includes('Moderada')) badge = 'bg-amber-100 text-amber-700 ring-1 ring-amber-600/20';
-                    
                     tr.innerHTML = `
                         <td class="px-6 py-4 font-mono text-xs text-slate-500">${row.id}</td>
                         <td class="px-6 py-4 text-slate-700">${new Date(row.data).toLocaleDateString()}</td>
@@ -740,38 +718,32 @@
                         <td class="px-6 py-4 text-slate-500 text-xs">${row.status}</td>
                         <td class="px-6 py-4 text-right flex justify-end gap-2">
                             <button onclick="ReportsService.exportSingle('${row.id}')" class="p-1.5 text-brand-600 hover:bg-brand-50 rounded transition" title="PDF"><i data-lucide="file-down" class="w-4 h-4"></i></button>
-                            <button onclick="App.deleteRow('${row.id}')" class="p-1.5 text-red-600 hover:bg-red-50 rounded transition" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <button onclick="App.askDeleteRow('${row.id}')" class="p-1.5 text-red-600 hover:bg-red-50 rounded transition" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
-                
                 document.getElementById('table-counter').innerText = `${DB.data.length} registros encontrados`;
                 lucide.createIcons();
             },
-
-            deleteRow: (id) => {
-                if(confirm('ATENÇÃO: Esta ação é irreversível. Deseja excluir este registro?')) {
+            askDeleteRow: (id) => {
+                Modal.open("Excluir Registro", "Deseja apagar este boletim de ocorrência?", () => {
                     DB.delete(id);
                     App.renderTable();
                     App.updateDashboard();
-                    Toast.show('Registro removido.', 'warning');
-                }
+                    Toast.show('Registro removido.', 'success');
+                });
             },
-
             sort: (field) => {
-                DB.data.reverse(); // Simples toggle para demo
+                DB.data.reverse(); 
                 App.renderTable();
             },
-
             updateDashboard: () => {
-                // KPIs
                 document.getElementById('kpi-active').innerText = DB.data.length;
-                document.getElementById('kpi-total').innerText = DB.data.length + 34; // Histórico
+                document.getElementById('kpi-total').innerText = DB.data.length;
+                document.getElementById('kpi-resolved').innerText = "0"; 
                 
-                // Chart Mock Data Update
                 setTimeout(() => {
-                    // Ensure contexts exist before destroying/creating
                     const trendCanvas = document.getElementById('chart-trend');
                     const severityCanvas = document.getElementById('chart-severity');
                     const channelsCanvas = document.getElementById('chart-channels');
@@ -792,7 +764,7 @@
                                 labels: ['Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
                                 datasets: [{
                                     label: 'Ocorrências',
-                                    data: [10, 15, 8, 12, 20, DB.data.length + 5],
+                                    data: [0, 0, 0, 0, 0, DB.data.length], // Zerado inicialmente
                                     borderColor: '#2563eb',
                                     backgroundColor: 'rgba(37, 99, 235, 0.1)',
                                     fill: true,
@@ -805,7 +777,6 @@
 
                     if(severityCanvas) {
                         const ctxS = severityCanvas.getContext('2d');
-                        // Count severity
                         let counts = { 'Extrema':0, 'Grave':0, 'Moderada':0, 'Baixa':0 };
                         DB.data.forEach(r => {
                             if(r.class.includes('Extrema')) counts['Extrema']++;
@@ -813,7 +784,6 @@
                             else if(r.class.includes('Moderada')) counts['Moderada']++;
                             else counts['Baixa']++;
                         });
-
                         App.charts.severity = new Chart(ctxS, {
                             type: 'doughnut',
                             data: {
@@ -832,11 +802,11 @@
                         App.charts.channels = new Chart(ctxC, {
                             type: 'bar',
                             data: {
-                                labels: ['Instagram', 'LinkedIn', 'Interno', 'WhatsApp'],
+                                labels: ['Instagram', 'LinkedIn', 'Interno', 'WhatsApp', 'Glassdoor'],
                                 datasets: [{
                                     label: 'Ocorrências',
-                                    data: [12, 19, 3, 5],
-                                    backgroundColor: ['#E1306C', '#0077b5', '#2563eb', '#25D366']
+                                    data: [0,0,0,0,0], // Zerado inicialmente
+                                    backgroundColor: ['#E1306C', '#0077b5', '#2563eb', '#25D366', '#0caa41']
                                 }]
                             },
                             options: commonOptions
@@ -850,29 +820,24 @@
                             data: {
                                 labels: ['Reputacional', 'Financeiro', 'Jurídico'],
                                 datasets: [{
-                                    data: [30, 50, 20],
+                                    data: [0, 0, 0], // Zerado inicialmente
                                     backgroundColor: ['#8b5cf6', '#10b981', '#f59e0b']
                                 }]
                             },
                             options: { responsive: true, maintainAspectRatio: false }
                         });
                     }
-
                 }, 100);
             }
         };
 
-        // 7. SERVIÇO DE RELATÓRIOS (PDF)
         const ReportsService = {
             exportSingle: (id) => {
                 const r = DB.data.find(x => x.id === id);
                 if(!r) return;
-
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                
-                // Header Corporativo
-                doc.setFillColor(30, 58, 138); // Brand 900
+                doc.setFillColor(30, 58, 138); 
                 doc.rect(0, 0, 210, 24, 'F');
                 doc.setTextColor(255, 255, 255);
                 doc.setFontSize(16);
@@ -881,59 +846,45 @@
                 doc.setFontSize(9);
                 doc.setFont('helvetica', 'normal');
                 doc.text('INSTITUTO EVERESTE - GESTÃO DE CRISE DE IMAGEM', 200, 15, { align: 'right' });
-
-                // Conteúdo
                 doc.setTextColor(30, 41, 59);
                 let y = 40;
-                
                 const addBlock = (title, content) => {
                     if (y > 270) { doc.addPage(); y = 20; }
                     doc.setFont('helvetica', 'bold');
                     doc.setFontSize(10);
-                    doc.setTextColor(37, 99, 235); // Blue header
+                    doc.setTextColor(37, 99, 235);
                     doc.text(title.toUpperCase(), 14, y);
                     doc.line(14, y+1, 196, y+1);
                     y += 6;
-                    
                     doc.setFont('helvetica', 'normal');
                     doc.setTextColor(51, 65, 85);
                     const lines = doc.splitTextToSize(String(content || '-'), 180);
                     doc.text(lines, 14, y);
                     y += (lines.length * 5) + 8;
                 };
-
-                // Metadados
                 doc.setFontSize(10);
                 doc.setFont('helvetica', 'bold');
                 doc.text(`ID: ${r.id}`, 14, y);
                 doc.text(`Data: ${new Date(r.data).toLocaleString()}`, 150, y);
                 y += 10;
-
                 addBlock('1. Fato Gerador', r.fato);
                 addBlock('2. Detalhes de Registro', `Responsável: ${r.resp}\nSetor: ${r.setor || '-'}\nOrigem: ${r.origem || '-'}\nPúblico: ${r.publico || '-'}`);
                 addBlock('3. Classificação de Risco', `Nível: ${r.class}\nCanais: ${r.canais ? r.canais.join(', ') : '-'}\nImpacto: ${r.impacto ? r.impacto.join(', ') : '-'}`);
                 addBlock('4. Descrição Completa', r.desc);
                 addBlock('5. Ações e Resposta', `Imediatas: ${r.acoes || '-'}\nEquipe: ${r.equipe || '-'}\nPlano: ${r.plano || '-'}`);
                 addBlock('6. Métricas e Futuro', `Métricas: ${r.metricas || '-'}\nEncaminhamentos: ${r.futuro || '-'}`);
-
-                // Footer
-                const pageCount = doc.internal.getNumberOfPages();
                 doc.setFontSize(8);
                 doc.setTextColor(150);
                 doc.text(`Documento confidencial gerado em ${new Date().toLocaleString()}`, 14, 285);
-                
                 doc.save(`${r.id}.pdf`);
                 Toast.show('PDF baixado com sucesso.');
             },
-
             exportFullReport: () => {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                
                 doc.text("Relatório Geral de Crises - Evereste", 14, 15);
                 doc.setFontSize(10);
                 doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 22);
-
                 const headers = [['ID', 'Data', 'Fato', 'Resp.', 'Risco', 'Status']];
                 const rows = DB.data.map(r => [
                     r.id, 
@@ -943,7 +894,6 @@
                     r.class, 
                     r.status
                 ]);
-
                 doc.autoTable({
                     head: headers,
                     body: rows,
@@ -952,21 +902,17 @@
                     headStyles: { fillColor: [30, 58, 138] },
                     styles: { fontSize: 8 }
                 });
-
                 doc.save('Relatorio_Geral_Evereste.pdf');
                 Toast.show('Relatório geral baixado.');
             }
         };
 
-        // Init
-        // Verifica sessão existente ao carregar (F5)
         if (sessionStorage.getItem('auth_token')) {
-            AuthService.state.step = 2; // Skip login UI visual step 1
+            AuthService.state.step = 2;
             document.getElementById('login-view').classList.add('hidden');
             document.getElementById('app-view').classList.remove('hidden');
             App.init();
         }
-
     </script>
 </body>
 </html>
