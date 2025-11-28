@@ -94,6 +94,7 @@
 
     <!-- 1. TELA DE LOGIN (Protegida) -->
     <div id="login-view" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        <!-- Background Decorativo -->
         <div class="absolute inset-0 z-0 opacity-10 bg-[radial-gradient(#2563eb_1px,transparent_1px)] [background-size:16px_16px]"></div>
         
         <div class="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/50 z-10 fade-in">
@@ -219,7 +220,7 @@
                             <p class="text-slate-500 text-sm">Monitoramento em tempo real da reputação.</p>
                         </div>
                         <div class="flex gap-3">
-                            <!-- Botão Limpar Tudo REMOVIDO DAQUI -->
+                            <button onclick="App.askClearAll()" class="btn btn-secondary text-red-600 hover:bg-red-50 border-red-200 shadow-none"><i data-lucide="trash-2" class="w-4 h-4"></i> Limpar Tudo</button>
                             <button onclick="Router.navigate('register')" class="btn btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> Nova Ocorrência</button>
                             <button onclick="ReportsService.exportFullReport()" class="btn btn-secondary"><i data-lucide="download" class="w-4 h-4"></i> Relatório PDF</button>
                         </div>
@@ -532,9 +533,6 @@
                                 <p class="text-sm text-slate-500">admin@evereste.org.br</p>
                             </div>
                         </div>
-                        <div class="mt-6 pt-6 border-t border-slate-100">
-                            <button onclick="App.askClearAll()" class="btn btn-secondary text-red-600 hover:bg-red-50 border-red-200 w-full justify-start"><i data-lucide="trash-2" class="w-4 h-4"></i> Limpar Banco de Dados Local</button>
-                        </div>
                     </div>
                 </div>
 
@@ -664,13 +662,18 @@
         };
 
         const DB = {
-            data: [], 
+            data: JSON.parse(localStorage.getItem('evereste_crises_db')) || [],
+            save: () => {
+                localStorage.setItem('evereste_crises_db', JSON.stringify(DB.data));
+            },
             add: (record) => {
                 DB.data.unshift(record);
                 DB.data.sort((a, b) => new Date(b.data) - new Date(a.data)); 
+                DB.save();
             },
             delete: (id) => {
                 DB.data = DB.data.filter(r => r.id !== id);
+                DB.save();
             }
         };
 
@@ -687,6 +690,7 @@
             askClearAll: () => {
                 Modal.open("Apagar Tudo", "Isso excluirá PERMANENTEMENTE todos os registros. Tem certeza?", () => {
                     DB.data = [];
+                    DB.save();
                     App.renderTable();
                     App.updateDashboard();
                     Toast.show("Todos os dados foram apagados.", "warning");
@@ -947,4 +951,3 @@
     </script>
 </body>
 </html>
-
