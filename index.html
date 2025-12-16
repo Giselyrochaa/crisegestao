@@ -1,953 +1,693 @@
-
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Gestão de Crises | Instituto Evereste</title>
+    <title>Assessoria de Comunicação Evereste</title>
     
-    <!-- Bibliotecas Externas (CDN) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <!-- Biblioteca leve para Hashes (Simulação de Segurança) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Configuração Tailwind & Estilos Customizados -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { 50: '#eff6ff', 100: '#dbeafe', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a' }
-                    },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
+    <!-- Fontes e Estilos Globais -->
     <style>
-        /* Estilos Base */
-        body { @apply bg-slate-50 text-slate-800; }
-        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        /* Componentes Utilitários */
-        .card { @apply bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden; }
-        .input-field { @apply w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none transition-all duration-200 bg-white text-sm; }
-        .input-label { @apply block text-sm font-medium text-slate-700 mb-1.5; }
-        .btn { @apply px-4 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 text-sm active:scale-95; }
-        .btn-primary { @apply bg-brand-700 hover:bg-brand-800 text-white shadow-lg shadow-brand-700/20; }
-        .btn-secondary { @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 shadow-sm; }
-        .btn-danger { @apply bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #0f172a; /* slate-900 */
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Classes utilitárias para esconder/mostrar */
+        .hidden-app { display: none !important; }
+
+        /* Impressão Otimizada (Retrato) */
+        @media print {
+            @page { margin: 0.5cm; size: portrait; }
+            body { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                background-color: white;
+                font-size: 10px; 
+            }
+            #app-content {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important; /* Garante que aparece na impressão */
+            }
+            #login-screen, #mobile-menu, header, footer, .no-print { display: none !important; }
+            .print-break-inside-avoid { break-inside: avoid; }
+            table { font-size: 9px; width: 100%; table-layout: fixed; }
+            th, td { padding: 4px 2px !important; word-wrap: break-word; }
+            input, select, textarea {
+                border: none !important;
+                background: transparent !important;
+                padding: 0 !important;
+                resize: none; 
+                -webkit-appearance: none;
+                appearance: none;
+            }
+            /* Cores forçadas para impressão */
+            .bg-blue-100 { background-color: #dbeafe !important; }
+            .bg-blue-900 { background-color: #1e3a8a !important; color: white !important; }
+            .bg-green-100 { background-color: #dcfce7 !important; }
+            .bg-red-100 { background-color: #fee2e2 !important; }
+            .bg-cyan-100 { background-color: #cffafe !important; }
+            .bg-purple-100 { background-color: #f3e8ff !important; }
+            
+            .custom-scrollbar::-webkit-scrollbar { display: none; }
+        }
+
+        #modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
         
-        /* Modal Overlay */
-        .modal-overlay { @apply fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none; }
-        .modal-overlay.show { @apply opacity-100 pointer-events-auto; }
-        .modal-content { @apply bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl transform transition-all duration-300 scale-95 opacity-0; }
-        .modal-overlay.show .modal-content { @apply scale-100 opacity-100; }
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { @apply bg-slate-300 rounded-full; }
-        ::-webkit-scrollbar-thumb:hover { @apply bg-slate-400; }
-
-        /* Toast Container */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast { @apply px-4 py-3 rounded-lg shadow-xl text-white text-sm font-medium flex items-center gap-3 min-w-[320px] max-w-md transform transition-all duration-300 translate-x-full opacity-0; }
-        .toast.show { @apply translate-x-0 opacity-100; }
-        .toast-success { @apply bg-emerald-600; }
-        .toast-error { @apply bg-red-600; }
-        .toast-warning { @apply bg-amber-500; }
-        .toast-info { @apply bg-blue-600; }
+        .nav-btn-active {
+            background-color: #ffffff !important;
+            color: #1e3a8a !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            font-weight: 700;
+        }
+        .nav-btn-inactive { color: #dbeafe !important; }
+        .nav-btn-inactive:hover {
+            background-color: #1d4ed8 !important;
+            color: #ffffff !important;
+        }
     </style>
 </head>
-<body>
+<body class="pb-12 h-screen flex flex-col">
 
-    <!-- NOTIFICAÇÕES -->
-    <div id="toast-container"></div>
-
-    <!-- MODAL DE CONFIRMAÇÃO -->
-    <div id="confirm-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="p-3 bg-red-100 rounded-full text-red-600">
-                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-slate-900" id="modal-title">Confirmar Ação</h3>
-                    <p class="text-sm text-slate-500" id="modal-desc">Você tem certeza que deseja prosseguir?</p>
-                </div>
-            </div>
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="Modal.close()" class="btn btn-secondary">Cancelar</button>
-                <button id="modal-confirm-btn" class="btn btn-danger">Confirmar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 1. TELA DE LOGIN (Protegida) -->
-    <div id="login-view" class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
-        <!-- Background Decorativo -->
-        <div class="absolute inset-0 z-0 opacity-10 bg-[radial-gradient(#2563eb_1px,transparent_1px)] [background-size:16px_16px]"></div>
-        
-        <div class="w-full max-w-md bg-white/80 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border border-white/50 z-10 fade-in">
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="fixed inset-0 bg-gradient-to-br from-blue-900 to-slate-900 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 animate-fadeIn">
             <div class="text-center mb-8">
-                <div class="inline-flex p-3 bg-brand-50 rounded-2xl mb-4 shadow-inner">
-                    <i data-lucide="shield-check" class="w-10 h-10 text-brand-700"></i>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-900">Acesso Corporativo</h1>
-                <p class="text-slate-500 text-sm mt-2">Sistema de Gestão de Crise de Imagem</p>
+                <div class="w-16 h-16 bg-blue-900 rounded-lg flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4 shadow-lg">AE</div>
+                <h1 class="text-2xl font-bold text-gray-800">Acesso Restrito</h1>
+                <p class="text-gray-500 text-sm">Sistema de Gestão Evereste</p>
             </div>
 
-            <form id="login-form" onsubmit="AuthService.login(event)" class="space-y-5">
+            <form id="auth-form" class="space-y-6">
                 <div>
-                    <label class="input-label">E-mail Institucional</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
                     <div class="relative">
-                        <i data-lucide="mail" class="absolute left-3 top-3 w-5 h-5 text-slate-400"></i>
-                        <input type="email" id="email" class="input-field pl-10" placeholder="usuario@evereste.org.br" required autocomplete="username">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                        </div>
+                        <input type="email" id="auth-email" class="pl-10 w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="nome@exemplo.com" required>
                     </div>
                 </div>
-                
                 <div>
-                    <label class="input-label">Senha de Acesso</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
                     <div class="relative">
-                        <i data-lucide="lock" class="absolute left-3 top-3 w-5 h-5 text-slate-400"></i>
-                        <input type="password" id="password" class="input-field pl-10" placeholder="••••••••" required autocomplete="current-password">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i data-lucide="lock" class="w-5 h-5"></i>
+                        </div>
+                        <input type="password" id="auth-password" class="pl-10 w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="••••••••" required>
                     </div>
                 </div>
 
-                <!-- 2FA Oculto inicialmente -->
-                <div id="2fa-container" class="hidden space-y-4 pt-4 border-t border-slate-100">
-                    <div class="bg-blue-50 text-blue-800 p-3 rounded-lg text-xs flex items-start gap-2">
-                        <i data-lucide="smartphone" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
-                        <span>Um código de verificação foi enviado para seu dispositivo móvel cadastrado. (Simulação: <strong>123456</strong>)</span>
-                    </div>
-                    <div>
-                        <label class="input-label">Código de Segurança (2FA)</label>
-                        <input type="text" id="2fa-code" maxlength="6" class="input-field text-center text-2xl tracking-[0.5em] font-mono" placeholder="000000">
-                    </div>
-                </div>
+                <div id="auth-error" class="text-red-500 text-sm text-center hidden bg-red-50 p-2 rounded border border-red-100"></div>
 
-                <button type="submit" id="login-btn" class="btn btn-primary w-full py-3 text-base shadow-brand-700/30">
-                    Iniciar Sessão Segura
+                <button type="submit" id="btn-login" class="w-full bg-blue-900 text-white font-bold py-3 rounded-lg hover:bg-blue-800 transition shadow-lg flex justify-center items-center">
+                    Entrar
                 </button>
             </form>
-            
-            <div class="mt-6 text-center">
-                <p class="text-xs text-slate-400 flex items-center justify-center gap-1">
-                    <i data-lucide="lock" class="w-3 h-3"></i> Conexão Criptografada (TLS 1.3)
-                </p>
+
+            <div class="mt-6 text-center pt-6 border-t border-gray-100">
+                <button id="toggle-auth-mode" class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                    Não tem conta? Criar registo
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- 2. SISTEMA PRINCIPAL (Layout Dashboard) -->
-    <div id="app-view" class="hidden flex h-screen overflow-hidden bg-slate-50">
-        
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl flex flex-col">
-            <div class="p-6 border-b border-slate-800 bg-slate-950/50">
-                <div class="flex items-center gap-3">
-                    <div class="p-1.5 bg-brand-600 rounded-lg"><i data-lucide="mountain" class="w-6 h-6"></i></div>
-                    <div>
-                        <h2 class="font-bold tracking-wide text-lg">EVERESTE</h2>
-                        <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Gestão de Crises</p>
-                    </div>
-                </div>
+    <!-- Modal de Confirmação -->
+    <div id="modal-overlay" class="fixed inset-0 flex items-center justify-center z-50 hidden no-print bg-black/50 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full border border-red-100 animate-fadeIn">
+            <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="text-red-500"></i> Confirmação
+            </h3>
+            <p id="modal-message" class="text-gray-600 mb-6">Tem a certeza que deseja apagar?</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="window.closeModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Cancelar</button>
+                <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg shadow-sm">Sim, Apagar</button>
             </div>
-
-            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-                <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-2">Monitoramento</p>
-                <button onclick="Router.navigate('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3 text-slate-400 group-hover:text-brand-400 transition-colors"></i> Dashboard
-                </button>
-                <button onclick="Router.navigate('list')" id="nav-list" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                    <i data-lucide="list-todo" class="w-5 h-5 mr-3 text-slate-400 group-hover:text-brand-400 transition-colors"></i> Ocorrências
-                </button>
-
-                <p class="px-3 text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Ações</p>
-                <button onclick="Router.navigate('register')" id="nav-register" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                    <i data-lucide="file-plus-2" class="w-5 h-5 mr-3 text-slate-400 group-hover:text-emerald-400 transition-colors"></i> Nova Ocorrência
-                </button>
-                <button onclick="Router.navigate('charts')" id="nav-charts" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                    <i data-lucide="pie-chart" class="w-5 h-5 mr-3 text-slate-400 group-hover:text-blue-400 transition-colors"></i> Gráficos
-                </button>
-                <button onclick="Router.navigate('reports')" id="nav-reports" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                    <i data-lucide="file-bar-chart-2" class="w-5 h-5 mr-3 text-slate-400 group-hover:text-purple-400 transition-colors"></i> Relatórios
-                </button>
-                <button onclick="Router.navigate('config')" id="nav-config" class="nav-item w-full flex items-center px-3 py-2.5 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors group">
-                    <i data-lucide="settings" class="w-5 h-5 mr-3 text-slate-400 group-hover:text-gray-400 transition-colors"></i> Configurações
-                </button>
-            </nav>
-
-            <div class="p-4 border-t border-slate-800 bg-slate-950/30">
-                <div class="flex items-center gap-3 mb-4 px-2">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-500 to-purple-500 flex items-center justify-center text-xs font-bold">AD</div>
-                    <div class="overflow-hidden">
-                        <p class="text-sm font-medium text-white truncate">Administrador</p>
-                        <p class="text-xs text-slate-500 truncate">Segurança Nível 3</p>
-                    </div>
-                </div>
-                <button onclick="AuthService.logout()" class="w-full btn bg-slate-800 hover:bg-red-900/30 text-slate-300 hover:text-red-400 border border-slate-700 hover:border-red-900/50 transition-colors">
-                    <i data-lucide="log-out" class="w-4 h-4"></i> Sair
-                </button>
-            </div>
-        </aside>
-
-        <!-- Área Principal -->
-        <main class="flex-1 md:ml-64 flex flex-col h-screen overflow-hidden">
-            <!-- Topbar Mobile -->
-            <header class="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center z-40">
-                <div class="flex items-center gap-2 font-bold text-brand-800"><i data-lucide="mountain"></i> EVERESTE</div>
-                <button onclick="document.getElementById('sidebar').classList.toggle('-translate-x-full')" class="text-slate-600"><i data-lucide="menu"></i></button>
-            </header>
-
-            <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
-                
-                <!-- VIEW: DASHBOARD -->
-                <div id="view-dashboard" class="view-page fade-in space-y-6">
-                    <div class="flex flex-col md:flex-row justify-between md:items-end gap-4">
-                        <div>
-                            <h2 class="text-2xl font-bold text-slate-800">Visão Geral</h2>
-                            <p class="text-slate-500 text-sm">Monitoramento em tempo real da reputação.</p>
-                        </div>
-                        <div class="flex gap-3">
-                            <button onclick="App.askClearAll()" class="btn btn-secondary text-red-600 hover:bg-red-50 border-red-200 shadow-none"><i data-lucide="trash-2" class="w-4 h-4"></i> Limpar Tudo</button>
-                            <button onclick="Router.navigate('register')" class="btn btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> Nova Ocorrência</button>
-                            <button onclick="ReportsService.exportFullReport()" class="btn btn-secondary"><i data-lucide="download" class="w-4 h-4"></i> Relatório PDF</button>
-                        </div>
-                    </div>
-
-                    <!-- KPIs -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="card p-5 border-l-4 border-l-red-500">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Crises Ativas</p>
-                            <div class="mt-2 flex justify-between items-end">
-                                <span id="kpi-active" class="text-3xl font-bold text-slate-900">0</span>
-                                <span class="text-red-600 bg-red-50 p-1.5 rounded-lg"><i data-lucide="activity" class="w-5 h-5"></i></span>
-                            </div>
-                        </div>
-                        <div class="card p-5 border-l-4 border-l-brand-500">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Registrado</p>
-                            <div class="mt-2 flex justify-between items-end">
-                                <span id="kpi-total" class="text-3xl font-bold text-slate-900">0</span>
-                                <span class="text-brand-600 bg-brand-50 p-1.5 rounded-lg"><i data-lucide="database" class="w-5 h-5"></i></span>
-                            </div>
-                        </div>
-                        <div class="card p-5 border-l-4 border-l-emerald-500">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Resolvidas (Mês)</p>
-                            <div class="mt-2 flex justify-between items-end">
-                                <span class="text-3xl font-bold text-slate-900" id="kpi-resolved">0</span>
-                                <span class="text-emerald-600 bg-emerald-50 p-1.5 rounded-lg"><i data-lucide="check-circle-2" class="w-5 h-5"></i></span>
-                            </div>
-                        </div>
-                        <div class="card p-5 border-l-4 border-l-amber-500">
-                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Índice de Risco</p>
-                            <div class="mt-2 flex justify-between items-end">
-                                <span class="text-3xl font-bold text-slate-900" id="kpi-risk">0.0</span>
-                                <span class="text-amber-600 bg-amber-50 p-1.5 rounded-lg"><i data-lucide="bar-chart-3" class="w-5 h-5"></i></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Gráficos -->
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="card p-6 lg:col-span-2">
-                            <h3 class="font-bold text-slate-800 mb-6 flex items-center"><i data-lucide="trending-up" class="w-4 h-4 mr-2 text-brand-600"></i> Tendência Temporal</h3>
-                            <div class="h-72 w-full"><canvas id="chart-trend"></canvas></div>
-                        </div>
-                        <div class="card p-6">
-                            <h3 class="font-bold text-slate-800 mb-6 flex items-center"><i data-lucide="pie-chart" class="w-4 h-4 mr-2 text-purple-600"></i> Distribuição de Risco</h3>
-                            <div class="h-64 w-full flex justify-center"><canvas id="chart-severity"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VIEW: LISTAGEM -->
-                <div id="view-list" class="view-page hidden space-y-6">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <h2 class="text-2xl font-bold text-slate-800">Ocorrências</h2>
-                        <div class="flex w-full sm:w-auto gap-2">
-                            <div class="relative flex-grow">
-                                <i data-lucide="search" class="absolute left-3 top-3 w-4 h-4 text-slate-400"></i>
-                                <input type="text" id="search-input" onkeyup="App.renderTable()" placeholder="Buscar..." class="input-field pl-10 py-2">
-                            </div>
-                            <button class="btn btn-secondary px-3"><i data-lucide="filter" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="card overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-slate-50 border-b border-slate-200">
-                                    <tr>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">ID</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:text-brand-600" onclick="App.sort('data')">Data <i data-lucide="arrow-up-down" class="inline w-3 h-3"></i></th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Fato Gerador</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Responsável</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Risco</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="table-body" class="divide-y divide-slate-100 bg-white text-sm text-slate-700">
-                                    <!-- Inserido via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-between items-center">
-                            <span class="text-xs text-slate-500" id="table-counter">0 registros</span>
-                            <div class="flex gap-2">
-                                <button class="p-1.5 rounded hover:bg-white border border-transparent hover:border-slate-200 disabled:opacity-50" disabled><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
-                                <button class="p-1.5 rounded hover:bg-white border border-transparent hover:border-slate-200 disabled:opacity-50" disabled><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VIEW: REGISTRO -->
-                <div id="view-register" class="view-page hidden max-w-4xl mx-auto pb-10">
-                    <div class="flex items-center gap-4 mb-6">
-                        <button onclick="Router.navigate('dashboard')" class="p-2 rounded-full hover:bg-slate-200 transition"><i data-lucide="arrow-left" class="w-5 h-5 text-slate-600"></i></button>
-                        <h2 class="text-2xl font-bold text-slate-800">Novo Registro</h2>
-                    </div>
-
-                    <form id="form-create" onsubmit="App.submitForm(event)" class="space-y-6">
-                        <!-- Seção 1 -->
-                        <div class="card p-6">
-                            <h3 class="font-bold text-brand-800 border-b border-slate-100 pb-3 mb-4 flex items-center"><i data-lucide="user" class="w-5 h-5 mr-2"></i> 1. Identificação</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div>
-                                    <label class="input-label">Data do Registro</label>
-                                    <!-- Data manual conforme solicitado -->
-                                    <input type="datetime-local" id="reg-data" class="input-field" required>
-                                </div>
-                                <div>
-                                    <label class="input-label required-label">Responsável</label>
-                                    <input type="text" id="reg-resp" class="input-field" placeholder="Nome Completo" required>
-                                </div>
-                                <div>
-                                    <label class="input-label required-label">Cargo/Setor</label>
-                                    <input type="text" id="reg-cargo" class="input-field" required>
-                                </div>
-                                <div>
-                                    <label class="input-label required-label">Contato</label>
-                                    <input type="tel" id="reg-contato" class="input-field" placeholder="(XX) 9XXXX-XXXX" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Seção 2 -->
-                        <div class="card p-6">
-                            <h3 class="font-bold text-brand-800 border-b border-slate-100 pb-3 mb-4 flex items-center"><i data-lucide="file-text" class="w-5 h-5 mr-2"></i> 2. Detalhes da Ocorrência</h3>
-                            <div class="space-y-5">
-                                <div>
-                                    <label class="input-label required-label">Fato Gerador (Resumo)</label>
-                                    <input type="text" id="reg-fato" class="input-field font-medium" placeholder="Ex: Publicação negativa no Instagram" required>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div>
-                                        <label class="input-label required-label">Data do Ocorrido</label>
-                                        <input type="datetime-local" id="reg-data-ocorrido" class="input-field" required>
-                                    </div>
-                                    <div>
-                                        <label class="input-label required-label">Setor Envolvido</label>
-                                        <input type="text" id="reg-setor" class="input-field" required>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div>
-                                        <label class="input-label">Origem da Crise</label>
-                                        <select id="reg-origem" class="input-field">
-                                            <option value="Externa">Externa</option>
-                                            <option value="Interna">Interna</option>
-                                            <option value="Mista">Mista</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="input-label">Reincidência?</label>
-                                        <div class="flex gap-4 mt-2">
-                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="reincidencia" value="Sim" class="text-brand-600 focus:ring-brand-500"> <span>Sim</span></label>
-                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="reincidencia" value="Não" class="text-brand-600 focus:ring-brand-500" checked> <span>Não</span></label>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label class="input-label mb-2">Público Afetado (Múltipla Escolha)</label>
-                                    <div class="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="publico" value="Colaboradores" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Colaboradores</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="publico" value="Parceiros" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Parceiros</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="publico" value="Clientes" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Clientes</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="publico" value="Sociedade em Geral" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Sociedade em Geral</span></label>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="input-label mb-2">Canais de Detecção</label>
-                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="E-mail" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">E-mail</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Instagram" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Instagram</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Imprensa" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Imprensa</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Glassdoor" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Glassdoor</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="LinkedIn" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">LinkedIn</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="WhatsApp" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">WhatsApp</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Google" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Google</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Youtube" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Youtube</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="canal" value="Outros" class="rounded text-brand-600 focus:ring-brand-500"> <span class="text-sm">Outros</span></label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Seção 3 -->
-                        <div class="card p-6">
-                            <h3 class="font-bold text-brand-800 border-b border-slate-100 pb-3 mb-4 flex items-center"><i data-lucide="alert-triangle" class="w-5 h-5 mr-2"></i> 3. Classificação e Impacto</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="input-label required-label">Nível de Gravidade</label>
-                                    <select id="reg-classificacao" class="input-field font-medium text-slate-700" required>
-                                        <option value="">Selecione...</option>
-                                        <option value="Sem Relevância Crítica">1 - Sem Relevância Crítica</option>
-                                        <option value="Potencial">2 - Potencial</option>
-                                        <option value="Moderada">3 - Moderada</option>
-                                        <option value="Grave">4 - Grave</option>
-                                        <option value="Extrema / Reputacional">5 - Reputacional Extrema</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="input-label mb-2">Impacto Estimado</label>
-                                    <div class="flex flex-wrap gap-2">
-                                        <label class="inline-flex items-center px-3 py-1.5 bg-white border rounded-full text-sm text-slate-600 hover:bg-slate-50 cursor-pointer transition border-slate-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
-                                            <input type="checkbox" name="impacto" value="Reputacional" class="mr-2 text-brand-600 rounded focus:ring-brand-500"> Reputacional
-                                        </label>
-                                        <label class="inline-flex items-center px-3 py-1.5 bg-white border rounded-full text-sm text-slate-600 hover:bg-slate-50 cursor-pointer transition border-slate-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
-                                            <input type="checkbox" name="impacto" value="Financeiro" class="mr-2 text-brand-600 rounded focus:ring-brand-500"> Financeiro
-                                        </label>
-                                        <label class="inline-flex items-center px-3 py-1.5 bg-white border rounded-full text-sm text-slate-600 hover:bg-slate-50 cursor-pointer transition border-slate-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
-                                            <input type="checkbox" name="impacto" value="Jurídico" class="mr-2 text-brand-600 rounded focus:ring-brand-500"> Jurídico
-                                        </label>
-                                        <label class="inline-flex items-center px-3 py-1.5 bg-white border rounded-full text-sm text-slate-600 hover:bg-slate-50 cursor-pointer transition border-slate-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700">
-                                            <input type="checkbox" name="impacto" value="Operacional" class="mr-2 text-brand-600 rounded focus:ring-brand-500"> Operacional
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Seção 4 -->
-                        <div class="card p-6">
-                            <h3 class="font-bold text-brand-800 border-b border-slate-100 pb-3 mb-4 flex items-center"><i data-lucide="shield" class="w-5 h-5 mr-2"></i> 4. Resposta e Ações</h3>
-                            <div class="space-y-5">
-                                <div>
-                                    <label class="input-label required-label">Descrição Objetiva do Ocorrido</label>
-                                    <textarea id="reg-desc" rows="4" class="input-field resize-none" placeholder="Contexto completo, envolvidos e timeline inicial..." required></textarea>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div>
-                                        <label class="input-label">Medidas Tomadas Até o Momento</label>
-                                        <textarea id="reg-acoes" rows="3" class="input-field resize-none" placeholder="Ex: remoção de conteúdo, nota oficial preliminar, resposta direta ao público afetado, contenção..."></textarea>
-                                    </div>
-                                    <div>
-                                        <label class="input-label">Plano de Ação em Execução</label>
-                                        <textarea id="reg-plano" rows="3" class="input-field resize-none" placeholder="Ex: Elaboração de nota, reunião extraordinária..."></textarea>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="input-label mb-2">Equipe Designada</label>
-                                    <div class="flex flex-wrap gap-3">
-                                        <label class="inline-flex items-center px-3 py-1.5 border rounded-lg text-sm bg-white hover:bg-slate-50 cursor-pointer"><input type="checkbox" name="equipe" value="Porta-voz" class="mr-2 text-brand-600"> Porta-voz</label>
-                                        <label class="inline-flex items-center px-3 py-1.5 border rounded-lg text-sm bg-white hover:bg-slate-50 cursor-pointer"><input type="checkbox" name="equipe" value="Comunicação externa" class="mr-2 text-brand-600"> Comunicação externa</label>
-                                        <label class="inline-flex items-center px-3 py-1.5 border rounded-lg text-sm bg-white hover:bg-slate-50 cursor-pointer"><input type="checkbox" name="equipe" value="Jurídico" class="mr-2 text-brand-600"> Jurídico</label>
-                                        <label class="inline-flex items-center px-3 py-1.5 border rounded-lg text-sm bg-white hover:bg-slate-50 cursor-pointer"><input type="checkbox" name="equipe" value="Monitoramento de mídia" class="mr-2 text-brand-600"> Monitoramento de mídia</label>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div>
-                                        <label class="input-label">Monitoramento e Métricas</label>
-                                        <textarea id="reg-metricas" rows="2" class="input-field" placeholder="Ex: Reunião com stakeholders, campanha de recuperação..."></textarea>
-                                    </div>
-                                    <div>
-                                        <label class="input-label">Encaminhamentos Futuros</label>
-                                        <textarea id="reg-futuro" rows="2" class="input-field" placeholder="Ex: Crescimento de menções negativas, perda de seguidores..."></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Botões -->
-                        <div class="flex justify-end gap-4 pt-4">
-                            <button type="button" onclick="Router.navigate('dashboard')" class="btn btn-secondary px-6">Cancelar</button>
-                            <button type="submit" class="btn btn-primary px-8 transform hover:-translate-y-0.5">
-                                <i data-lucide="save" class="w-4 h-4"></i> Salvar Boletim
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- VIEW: GRÁFICOS (NOVA) -->
-                <div id="view-charts" class="view-page hidden space-y-6">
-                    <h2 class="text-2xl font-bold text-slate-800">Análise Gráfica Detalhada</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="card p-6">
-                            <h3 class="font-bold text-slate-800 mb-4">Canais de Detecção</h3>
-                            <div class="h-72 w-full"><canvas id="chart-channels"></canvas></div>
-                        </div>
-                        <div class="card p-6">
-                            <h3 class="font-bold text-slate-800 mb-4">Impacto por Tipo</h3>
-                            <div class="h-72 w-full flex justify-center"><canvas id="chart-impact"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- VIEW: RELATÓRIOS (NOVA) -->
-                <div id="view-reports" class="view-page hidden space-y-6">
-                    <h2 class="text-2xl font-bold text-slate-800">Relatórios</h2>
-                    <div class="card p-10 text-center border-2 border-dashed border-slate-300">
-                        <i data-lucide="file-text" class="w-16 h-16 mx-auto text-slate-300 mb-4"></i>
-                        <h3 class="text-xl font-bold text-slate-700 mb-2">Exportar Relatório Completo</h3>
-                        <p class="text-slate-500 mb-6">Gera um arquivo PDF com todos os dados e estatísticas atuais do sistema.</p>
-                        <button onclick="ReportsService.exportFullReport()" class="btn btn-primary mx-auto">
-                            <i data-lucide="download" class="w-4 h-4"></i> Baixar PDF
-                        </button>
-                    </div>
-                </div>
-
-                <!-- VIEW: CONFIG (NOVA) -->
-                <div id="view-config" class="view-page hidden space-y-6">
-                    <h2 class="text-2xl font-bold text-slate-800">Configurações</h2>
-                    <div class="card p-6">
-                        <h3 class="font-bold text-slate-800 mb-4">Perfil de Usuário</h3>
-                        <div class="flex items-center p-4 bg-slate-50 rounded-lg border border-slate-200">
-                            <div class="w-12 h-12 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center font-bold text-xl mr-4">U</div>
-                            <div>
-                                <p class="font-bold text-slate-800">Administrador</p>
-                                <p class="text-sm text-slate-500">admin@evereste.org.br</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </main>
+        </div>
     </div>
 
-    <!-- LÓGICA JAVASCRIPT (SEGURANÇA, DADOS E RENDERIZAÇÃO) -->
-    <script>
-        const Security = {
-            PASS_HASH: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // Hash fake para demo
-            sanitize: (str) => {
-                if (!str) return '';
-                const div = document.createElement('div');
-                div.textContent = str;
-                return div.innerHTML;
-            },
-            hash: async (message) => {
-                return message === "Evereste@2025" ? Security.PASS_HASH : "invalid";
+    <!-- APLICAÇÃO PRINCIPAL (Wrapper) -->
+    <div id="app-wrapper" class="flex-1 flex flex-col hidden-app">
+        
+        <!-- Header -->
+        <header class="bg-blue-900 text-white shadow-lg sticky top-0 z-40 no-print">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-white rounded flex items-center justify-center text-blue-900 font-bold shadow-sm">AE</div>
+                    <div>
+                        <h1 class="text-lg font-bold leading-none hidden md:block">Assessoria de Comunicação Evereste</h1>
+                        <h1 class="text-lg font-bold leading-none md:hidden">Evereste</h1>
+                        <p class="text-xs text-blue-200 mt-1">Gestão Integrada</p>
+                    </div>
+                </div>
+
+                <!-- Nav Desktop -->
+                <nav class="hidden md:flex gap-1 bg-blue-800/50 p-1 rounded-lg">
+                    <button onclick="window.changeView('dashboard')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-all" data-view="dashboard">Dashboard</button>
+                    <button onclick="window.changeView('month')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-all" data-view="month">Ações</button>
+                    <button onclick="window.changeView('calendar')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-all" data-view="calendar">Calendário</button>
+                    <button onclick="window.changeView('reports')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-all" data-view="reports">Relatórios</button>
+                    <button onclick="window.changeView('crisis')" class="nav-btn px-4 py-2 rounded-md text-sm font-medium transition-all" data-view="crisis">Riscos</button>
+                </nav>
+
+                <div class="flex items-center gap-2">
+                    <span id="user-email-display" class="text-xs text-blue-200 hidden md:block mr-2"></span>
+                    <button onclick="window.logout()" class="p-2 text-white hover:bg-red-600/80 rounded transition bg-blue-800" title="Sair">
+                        <i data-lucide="log-out" class="w-5 h-5"></i>
+                    </button>
+                    <button class="md:hidden p-2 text-white hover:bg-blue-800 rounded" onclick="window.toggleMobileMenu()">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="mobile-menu" class="hidden md:hidden bg-blue-800 px-4 py-2 space-y-2 border-t border-blue-700">
+                <button onclick="window.changeView('dashboard'); window.toggleMobileMenu()" class="block w-full text-left py-3 text-white border-b border-blue-700 font-medium">Dashboard</button>
+                <button onclick="window.changeView('month'); window.toggleMobileMenu()" class="block w-full text-left py-3 text-white border-b border-blue-700 font-medium">Ações do Mês</button>
+                <button onclick="window.changeView('calendar'); window.toggleMobileMenu()" class="block w-full text-left py-3 text-white border-b border-blue-700 font-medium">Calendário Anual</button>
+                <button onclick="window.changeView('reports'); window.toggleMobileMenu()" class="block w-full text-left py-3 text-white border-b border-blue-700 font-medium">Relatórios & Metas</button>
+                <button onclick="window.changeView('crisis'); window.toggleMobileMenu()" class="block w-full text-left py-3 text-white font-medium">Riscos & Crises</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main id="app-content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1">
+            <div id="loading" class="text-center py-20 text-gray-500">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900 mb-4"></div>
+                <p id="loading-text" class="animate-pulse">A carregar dados...</p>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="hidden print:block text-center text-xs text-gray-400 mt-12 border-t pt-4 bg-white pb-4 w-full">
+            <p class="uppercase font-bold tracking-wider">Assessoria de Comunicação Evereste - Relatório Oficial</p>
+            <p>Documento gerado em <span id="print-date"></span> por <span id="print-user"></span></p>
+        </footer>
+    
+    </div> <!-- Fim App Wrapper -->
+    
+    <!-- Status Indicator -->
+    <div id="connection-status" class="fixed bottom-2 right-2 text-[10px] text-gray-400 no-print opacity-50 hover:opacity-100 transition-opacity bg-white px-2 py-1 rounded shadow border z-50">
+        A conectar...
+    </div>
+
+    <!-- SCRIPT UNIFICADO (FIREBASE + AUTH) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+
+        // --- CONSTANTES ---
+        const MONTHS_DATA = [
+            { id: 0, name: 'Janeiro', color: 'border-l-4 border-gray-200' },
+            { id: 1, name: 'Fevereiro', color: 'border-l-4 border-purple-400' },
+            { id: 2, name: 'Março', color: 'border-l-4 border-pink-300' },
+            { id: 3, name: 'Abril', color: 'border-l-4 border-blue-400' },
+            { id: 4, name: 'Maio', color: 'border-l-4 border-yellow-400' },
+            { id: 5, name: 'Junho', color: 'border-l-4 border-red-500' },
+            { id: 6, name: 'Julho', color: 'border-l-4 border-yellow-500' },
+            { id: 7, name: 'Agosto', color: 'border-l-4 border-yellow-600' },
+            { id: 8, name: 'Setembro', color: 'border-l-4 border-yellow-300' },
+            { id: 9, name: 'Outubro', color: 'border-l-4 border-pink-500' },
+            { id: 10, name: 'Novembro', color: 'border-l-4 border-blue-600' },
+            { id: 11, name: 'Dezembro', color: 'border-l-4 border-red-600' },
+        ];
+
+        const EVENT_TYPES = ['TI', 'Evento Interno', 'Evento Externo', 'Campanha', 'Treinamento', 'Gravação Externa'];
+        const AUDIENCE_OPTIONS = ['Externo', 'Interno', 'Parceria', 'Visitante', 'Colaborador'];
+        const CRISIS_SECTOR_OPTIONS = ['Comunicação', 'Central', 'Infraestrutura', 'Administração', 'RH', 'Externo'];
+        const RISK_LEVELS = ['Sem relevância crítica', 'Leve', 'Moderada', 'Potencial', 'Grave', 'Reputacional Extrema'];
+        const ORIGIN_OPTIONS = ['Interno', 'Externo', 'Misto'];
+        const RESPONSIBLE_OPTIONS = ['Vera Nascimento', 'Gisely Rocha'];
+
+        // --- CONFIGURAÇÃO FIREBASE ---
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
+
+        // --- ESTADO GLOBAL ---
+        window.state = {
+            view: 'dashboard',
+            selectedMonth: new Date().getMonth(),
+            activities: [],
+            crises: [],
+            notifications: [],
+            monthlyReports: {},
+            holidays: [{ id: 'init', month: 0, day: '01', name: 'Confraternização Universal' }],
+            user: null,
+            isLoginMode: true // Toggle entre Login e Cadastro
+        };
+
+        let db, auth;
+
+        // --- ERROR HANDLER ---
+        window.onerror = function(message) {
+            console.error("Erro:", message);
+        };
+
+        // --- FUNÇÕES DE AUTH (INTERFACE) ---
+        
+        // Alternar entre Login e Cadastro na UI
+        const toggleAuthBtn = document.getElementById('toggle-auth-mode');
+        const btnLogin = document.getElementById('btn-login');
+        const form = document.getElementById('auth-form');
+        
+        if(toggleAuthBtn) {
+            toggleAuthBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.state.isLoginMode = !window.state.isLoginMode;
+                if(window.state.isLoginMode) {
+                    btnLogin.innerText = "Entrar";
+                    toggleAuthBtn.innerText = "Não tem conta? Criar registo";
+                } else {
+                    btnLogin.innerText = "Criar Conta";
+                    toggleAuthBtn.innerText = "Já tem conta? Fazer Login";
+                }
+                document.getElementById('auth-error').classList.add('hidden');
+            });
+        }
+
+        if(form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('auth-email').value;
+                const password = document.getElementById('auth-password').value;
+                const errorDiv = document.getElementById('auth-error');
+                
+                errorDiv.classList.add('hidden');
+                btnLogin.disabled = true;
+                btnLogin.innerText = "A processar...";
+
+                try {
+                    if (window.state.isLoginMode) {
+                        await signInWithEmailAndPassword(auth, email, password);
+                    } else {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                    }
+                    // Sucesso: o onAuthStateChanged lidará com a UI
+                } catch (error) {
+                    console.error(error);
+                    errorDiv.innerText = "Erro: " + error.message;
+                    errorDiv.classList.remove('hidden');
+                    btnLogin.disabled = false;
+                    btnLogin.innerText = window.state.isLoginMode ? "Entrar" : "Criar Conta";
+                }
+            });
+        }
+
+        window.logout = async () => {
+            try {
+                await signOut(auth);
+                // onAuthStateChanged atualizará a UI
+            } catch(e) { console.error(e); }
+        };
+
+        // --- FUNÇÕES DE INTERFACE DO SISTEMA ---
+        window.changeView = (viewName) => {
+            window.state.view = viewName;
+            renderApp();
+        };
+
+        window.changeMonth = (monthId) => {
+            window.state.selectedMonth = parseInt(monthId);
+            renderApp();
+        };
+
+        window.toggleMobileMenu = () => {
+            const menu = document.getElementById('mobile-menu');
+            if(menu) menu.classList.toggle('hidden');
+        };
+
+        window.handleSave = () => {
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="cloud-check"></i> Sincronizado!';
+            btn.classList.add('bg-green-700');
+            setTimeout(() => { 
+                btn.innerHTML = originalText; 
+                btn.classList.remove('bg-green-700');
+                if(typeof lucide !== 'undefined') lucide.createIcons(); 
+            }, 2000);
+        };
+        
+        window.exportPDF = () => setTimeout(() => window.print(), 100);
+
+        window.openConfirmModal = (msg, actionCallback) => {
+            const modal = document.getElementById('modal-overlay');
+            const msgEl = document.getElementById('modal-message');
+            const btn = document.getElementById('modal-confirm-btn');
+            if(modal && msgEl && btn) {
+                msgEl.innerText = msg;
+                btn.onclick = () => { actionCallback(); window.closeModal(); };
+                modal.classList.remove('hidden');
             }
         };
 
-        const Toast = {
-            show: (message, type = 'success') => {
-                const container = document.getElementById('toast-container');
-                const toast = document.createElement('div');
-                let icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'alert-circle' : 'info');
-                toast.className = `toast toast-${type}`;
-                toast.innerHTML = `<i data-lucide="${icon}" class="w-5 h-5"></i> ${Security.sanitize(message)}`;
-                container.appendChild(toast);
-                lucide.createIcons();
-                requestAnimationFrame(() => toast.classList.add('show'));
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    setTimeout(() => toast.remove(), 300);
-                }, 4000);
-            }
+        window.closeModal = () => {
+            const modal = document.getElementById('modal-overlay');
+            if(modal) modal.classList.add('hidden');
         };
 
-        const Modal = {
-            callback: null,
-            open: (title, desc, confirmCallback) => {
-                document.getElementById('modal-title').innerText = title;
-                document.getElementById('modal-desc').innerText = desc;
-                Modal.callback = confirmCallback;
-                document.getElementById('confirm-modal').classList.add('show');
-            },
-            close: () => {
-                document.getElementById('confirm-modal').classList.remove('show');
-                Modal.callback = null;
-            }
+        // --- CRUD UNIFICADO ---
+        window.addActivity = async () => {
+            const data = {
+                month: window.state.selectedMonth,
+                type: 'Evento Interno', eventName: '', audience: 'Interno', link: '',
+                date: '', time: '', postName: '', postOccurrence: '', postAction: '',
+                satisfaction: '', status: 'Planejado',
+                createdAt: new Date().toISOString(),
+                createdBy: window.state.user.email
+            };
+            try { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'activities'), data); } 
+            catch (e) { console.error("Erro addActivity:", e); }
         };
-
-        document.getElementById('modal-confirm-btn').addEventListener('click', () => {
-            if(Modal.callback) Modal.callback();
-            Modal.close();
+        
+        window.updateUnifiedActivity = async (id, field, value) => {
+            try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'activities', id), { [field]: value }); } 
+            catch (e) { console.error("Erro updateActivity:", e); }
+        };
+        
+        window.requestDeleteActivity = (id) => window.openConfirmModal("Excluir esta ação para todos?", async () => {
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'activities', id)); } 
+            catch (e) { console.error("Erro deleteActivity:", e); }
         });
 
-        const AuthService = {
-            state: { step: 1 },
-            login: async (e) => {
-                e.preventDefault();
-                if (AuthService.state.step === 1) {
-                    const email = document.getElementById('email').value;
-                    const pass = document.getElementById('password').value;
-                    if (!email.endsWith('@evereste.org.br')) {
-                        Toast.show("Acesso permitido apenas para e-mails corporativos.", "error");
-                        return;
-                    }
-                    const passHash = await Security.hash(pass);
-                    if (passHash === Security.PASS_HASH) {
-                        document.getElementById('email').disabled = true;
-                        document.getElementById('password').disabled = true;
-                        document.getElementById('2fa-container').classList.remove('hidden');
-                        document.getElementById('login-btn').innerHTML = 'Validar Token de Segurança';
-                        AuthService.state.step = 2;
-                        Toast.show("Credenciais válidas. Insira o token 2FA.", "info");
-                    } else {
-                        Toast.show("Credenciais inválidas.", "error");
-                    }
+        window.addCrisis = async () => {
+            const data = {
+                date: new Date().toISOString().split('T')[0],
+                riskLevel: 'Sem relevância crítica', origin: 'Interno', sector: 'Comunicação', responsible: 'Vera Nascimento',
+                correctiveAction: '', risks: '', learning: '', improvement: '',
+                createdAt: new Date().toISOString(),
+                createdBy: window.state.user.email
+            };
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'crises'), data);
+        };
+        
+        window.updateUnifiedCrisis = async (id, field, value) => {
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'crises', id), { [field]: value });
+        };
+        
+        window.requestDeleteCrisis = (id) => window.openConfirmModal("Excluir este registo?", async () => {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'crises', id));
+        });
+
+        window.addNotification = async () => {
+            const input = document.getElementById('new-notification');
+            if(input && input.value.trim()) {
+                const data = { text: input.value, timestamp: new Date().toISOString(), author: window.state.user.email };
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'notifications'), data);
+                input.value = '';
+            }
+        };
+        
+        window.deleteNotification = async (id) => {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'notifications', id));
+        };
+
+        window.addHoliday = async () => {
+            const dayInput = document.getElementById('holiday-day');
+            const nameInput = document.getElementById('holiday-name');
+            if (dayInput && nameInput && dayInput.value && nameInput.value) {
+                const data = { month: window.state.selectedMonth, day: dayInput.value, name: nameInput.value };
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'holidays'), data);
+            }
+        };
+        
+        window.removeHoliday = (id) => window.openConfirmModal("Apagar data?", async () => {
+            await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'holidays', id));
+        });
+
+        window.updateUnifiedReport = async (monthId, field, value) => {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'reports', monthId.toString()), { [field]: value }, { merge: true });
+        };
+        
+        window.requestClearReport = () => window.openConfirmModal("Limpar relatório?", async () => {
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'reports', window.state.selectedMonth.toString()), { explanation: '', highlights: '', suggestions: '' });
+        });
+
+        window.generateAutoText = () => {
+            const monthActs = window.state.activities.filter(a => a.month === window.state.selectedMonth);
+            const total = monthActs.length;
+            const completed = monthActs.filter(a => a.status === 'Concluído').length;
+            const efficiency = total > 0 ? Math.round((completed/total)*100) : 0;
+            const text = `ANÁLISE DE ENTREGAS - ${MONTHS_DATA[window.state.selectedMonth].name.toUpperCase()}\n\nO mês encerrou com ${total} ações planejadas e ${completed} metas atingidas. Eficiência de execução: ${efficiency}%.`;
+            window.updateUnifiedReport(window.state.selectedMonth, 'explanation', text);
+        };
+        
+        window.generateHighlights = () => {
+            const completedActs = window.state.activities.filter(a => a.month === window.state.selectedMonth && a.status === 'Concluído');
+            let text = "RESULTADOS CONSOLIDADOS:\n\n";
+            if (completedActs.length === 0) text += "- Nenhuma atividade concluída neste período.";
+            else completedActs.forEach(act => text += `• ${act.type}: "${act.eventName || 'Evento'}" - Satisfação: ${act.satisfaction || '0'}%\n`);
+            window.updateUnifiedReport(window.state.selectedMonth, 'highlights', text);
+        };
+
+        // --- RENDERIZAÇÃO ---
+        function renderApp() {
+            if (!window.state.user) return; // Não renderiza se não logado
+
+            const content = document.getElementById('app-content');
+            if(!content) return;
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.dataset.view === window.state.view) {
+                    btn.className = 'nav-btn nav-btn-active px-4 py-2 rounded-md text-sm font-medium transition-all';
                 } else {
-                    const code = document.getElementById('2fa-code').value;
-                    if (code === "123456") {
-                        sessionStorage.setItem('auth_token', 'secure_session_' + Date.now());
-                        Toast.show("Sessão segura iniciada.", "success");
-                        Router.init();
-                    } else {
-                        Toast.show("Token de segurança inválido.", "error");
-                    }
+                    btn.className = 'nav-btn nav-btn-inactive px-4 py-2 rounded-md text-sm font-medium transition-all';
                 }
-            },
-            logout: () => {
-                Modal.open("Encerrar Sessão", "Deseja realmente sair do sistema?", () => {
-                    sessionStorage.removeItem('auth_token');
-                    window.location.reload();
-                });
+            });
+
+            // Seletor de mês apenas em views especificas
+            let monthSelectorHTML = '';
+            if (window.state.view === 'month' || window.state.view === 'reports') {
+                monthSelectorHTML = `
+                    <div class="mb-8 overflow-x-auto pb-4 no-print">
+                        <div class="flex gap-2 min-w-max px-1">
+                            ${MONTHS_DATA.map(m => `
+                                <button onclick="window.changeMonth(${m.id})" 
+                                    class="px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap border shadow-sm
+                                    ${window.state.selectedMonth === m.id 
+                                        ? 'bg-blue-900 text-white border-blue-900 ring-2 ring-offset-2 ring-blue-900' 
+                                        : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200 hover:border-gray-300'}">
+                                    ${m.name}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
             }
-        };
 
-        const Router = {
-            init: () => {
-                document.getElementById('login-view').classList.add('hidden');
-                document.getElementById('app-view').classList.remove('hidden');
-                lucide.createIcons();
-                App.init();
-            },
-            navigate: (viewId) => {
-                document.querySelectorAll('.view-page').forEach(el => el.classList.add('hidden'));
-                const target = document.getElementById(`view-${viewId}`);
-                if (target) target.classList.remove('hidden');
-                
-                document.querySelectorAll('.nav-item').forEach(el => {
-                    el.classList.remove('bg-slate-800', 'text-white');
-                    el.classList.add('text-slate-300');
-                });
-                const active = document.getElementById(`nav-${viewId}`);
-                if(active) {
-                    active.classList.remove('text-slate-300');
-                    active.classList.add('bg-slate-800', 'text-white');
-                }
+            let viewHTML = '';
+            if (window.state.view === 'dashboard') viewHTML = getDashboardHTML();
+            else if (window.state.view === 'month') viewHTML = getMonthViewHTML();
+            else if (window.state.view === 'calendar') viewHTML = getCalendarViewHTML();
+            else if (window.state.view === 'crisis') viewHTML = getCrisisViewHTML();
+            else if (window.state.view === 'reports') viewHTML = getReportsViewHTML();
 
-                if(viewId === 'dashboard') App.updateDashboard();
-                if(viewId === 'dashboard' || viewId === 'charts') {
-                    setTimeout(() => App.updateDashboard(), 100);
-                }
-            }
-        };
-
-        const DB = {
-            data: JSON.parse(localStorage.getItem('evereste_crises_db')) || [],
-            save: () => {
-                localStorage.setItem('evereste_crises_db', JSON.stringify(DB.data));
-            },
-            add: (record) => {
-                DB.data.unshift(record);
-                DB.data.sort((a, b) => new Date(b.data) - new Date(a.data)); 
-                DB.save();
-            },
-            delete: (id) => {
-                DB.data = DB.data.filter(r => r.id !== id);
-                DB.save();
-            }
-        };
-
-        const App = {
-            charts: {},
-            init: () => {
-                const now = new Date();
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                document.getElementById('reg-data').value = now.toISOString().slice(0,16);
-                App.renderTable();
-                App.updateDashboard();
-                Router.navigate('dashboard');
-            },
-            askClearAll: () => {
-                Modal.open("Apagar Tudo", "Isso excluirá PERMANENTEMENTE todos os registros. Tem certeza?", () => {
-                    DB.data = [];
-                    DB.save();
-                    App.renderTable();
-                    App.updateDashboard();
-                    Toast.show("Todos os dados foram apagados.", "warning");
-                });
-            },
-            askDeleteRow: (id) => {
-                Modal.open("Excluir Registro", "Deseja apagar este boletim de ocorrência?", () => {
-                    DB.delete(id);
-                    App.renderTable();
-                    App.updateDashboard();
-                    Toast.show('Registro removido.', 'success');
-                });
-            },
-            submitForm: (e) => {
-                e.preventDefault();
-                const newRec = {
-                    id: `BO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*10000)).padStart(4,'0')}`,
-                    data: document.getElementById('reg-data').value || document.getElementById('reg-data-ocorrido').value,
-                    fato: document.getElementById('reg-fato').value,
-                    resp: document.getElementById('reg-resp').value,
-                    class: document.getElementById('reg-classificacao').value,
-                    status: 'Nova',
-                    setor: document.getElementById('reg-setor').value,
-                    origem: document.getElementById('reg-origem').value,
-                    reincidencia: document.querySelector('input[name="reincidencia"]:checked').value,
-                    publico: Array.from(document.querySelectorAll('input[name="publico"]:checked')).map(c=>c.value).join(', '),
-                    desc: document.getElementById('reg-desc').value,
-                    acoes: document.getElementById('reg-acoes').value,
-                    equipe: Array.from(document.querySelectorAll('input[name="equipe"]:checked')).map(c=>c.value).join(', '),
-                    plano: document.getElementById('reg-plano').value,
-                    metricas: document.getElementById('reg-metricas').value,
-                    futuro: document.getElementById('reg-futuro').value,
-                    impacto: Array.from(document.querySelectorAll('input[name="impacto"]:checked')).map(c=>c.value),
-                    canais: Array.from(document.querySelectorAll('input[name="canal"]:checked')).map(c=>c.value)
-                };
-                DB.add(newRec);
-                Toast.show(`Ocorrência ${newRec.id} registrada com sucesso.`);
-                e.target.reset();
-                const now = new Date();
-                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                document.getElementById('reg-data').value = now.toISOString().slice(0,16);
-                App.renderTable();
-                App.updateDashboard();
-                Router.navigate('list');
-            },
-            renderTable: () => {
-                const tbody = document.getElementById('table-body');
-                tbody.innerHTML = '';
-                const term = document.getElementById('search-input').value.toLowerCase();
-                DB.data.filter(r => 
-                    r.fato.toLowerCase().includes(term) || 
-                    r.id.toLowerCase().includes(term) ||
-                    r.resp.toLowerCase().includes(term)
-                ).forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
-                    let badge = 'bg-slate-100 text-slate-600';
-                    if(row.class.includes('Extrema')) badge = 'bg-red-100 text-red-700 ring-1 ring-red-600/20';
-                    else if(row.class.includes('Grave')) badge = 'bg-orange-100 text-orange-700 ring-1 ring-orange-600/20';
-                    else if(row.class.includes('Moderada')) badge = 'bg-amber-100 text-amber-700 ring-1 ring-amber-600/20';
-                    tr.innerHTML = `
-                        <td class="px-6 py-4 font-mono text-xs text-slate-500">${row.id}</td>
-                        <td class="px-6 py-4 text-slate-700">${new Date(row.data).toLocaleDateString()}</td>
-                        <td class="px-6 py-4 font-medium text-slate-800 max-w-xs truncate">${Security.sanitize(row.fato)}</td>
-                        <td class="px-6 py-4 text-slate-600">${Security.sanitize(row.resp)}</td>
-                        <td class="px-6 py-4"><span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${badge}">${Security.sanitize(row.class)}</span></td>
-                        <td class="px-6 py-4 text-slate-500 text-xs">${row.status}</td>
-                        <td class="px-6 py-4 text-right flex justify-end gap-2">
-                            <button onclick="ReportsService.exportSingle('${row.id}')" class="p-1.5 text-brand-600 hover:bg-brand-50 rounded transition" title="PDF"><i data-lucide="file-down" class="w-4 h-4"></i></button>
-                            <button onclick="App.askDeleteRow('${row.id}')" class="p-1.5 text-red-600 hover:bg-red-50 rounded transition" title="Excluir"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-                document.getElementById('table-counter').innerText = `${DB.data.length} registros encontrados`;
-                lucide.createIcons();
-            },
-            sort: (field) => {
-                DB.data.reverse(); 
-                App.renderTable();
-            },
-            updateDashboard: () => {
-                document.getElementById('kpi-active').innerText = DB.data.length;
-                document.getElementById('kpi-total').innerText = DB.data.length;
-                document.getElementById('kpi-resolved').innerText = "0"; 
-                
-                setTimeout(() => {
-                    const trendCanvas = document.getElementById('chart-trend');
-                    const severityCanvas = document.getElementById('chart-severity');
-                    const channelsCanvas = document.getElementById('chart-channels');
-                    const impactCanvas = document.getElementById('chart-impact');
-
-                    if(App.charts.trend) App.charts.trend.destroy();
-                    if(App.charts.severity) App.charts.severity.destroy();
-                    if(App.charts.channels) App.charts.channels.destroy();
-                    if(App.charts.impact) App.charts.impact.destroy();
-
-                    const commonOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } };
-
-                    if(trendCanvas) {
-                        const ctxT = trendCanvas.getContext('2d');
-                        App.charts.trend = new Chart(ctxT, {
-                            type: 'line',
-                            data: {
-                                labels: ['Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-                                datasets: [{
-                                    label: 'Ocorrências',
-                                    data: [0, 0, 0, 0, 0, DB.data.length], 
-                                    borderColor: '#2563eb',
-                                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                                    fill: true,
-                                    tension: 0.4
-                                }]
-                            },
-                            options: commonOptions
-                        });
-                    }
-
-                    if(severityCanvas) {
-                        const ctxS = severityCanvas.getContext('2d');
-                        let counts = { 'Extrema':0, 'Grave':0, 'Moderada':0, 'Baixa':0 };
-                        DB.data.forEach(r => {
-                            if(r.class.includes('Extrema')) counts['Extrema']++;
-                            else if(r.class.includes('Grave')) counts['Grave']++;
-                            else if(r.class.includes('Moderada')) counts['Moderada']++;
-                            else counts['Baixa']++;
-                        });
-                        App.charts.severity = new Chart(ctxS, {
-                            type: 'doughnut',
-                            data: {
-                                labels: Object.keys(counts),
-                                datasets: [{
-                                    data: Object.values(counts),
-                                    backgroundColor: ['#dc2626', '#ea580c', '#d97706', '#2563eb']
-                                }]
-                            },
-                            options: { responsive: true, maintainAspectRatio: false }
-                        });
-                    }
-
-                    if(channelsCanvas) {
-                        const ctxC = channelsCanvas.getContext('2d');
-                        App.charts.channels = new Chart(ctxC, {
-                            type: 'bar',
-                            data: {
-                                labels: ['Instagram', 'LinkedIn', 'Imprensa', 'WhatsApp', 'Glassdoor', 'Youtube'],
-                                datasets: [{
-                                    label: 'Ocorrências',
-                                    data: [0,0,0,0,0,0], 
-                                    backgroundColor: ['#E1306C', '#0077b5', '#1d4ed8', '#25D366', '#0caa41', '#FF0000']
-                                }]
-                            },
-                            options: commonOptions
-                        });
-                    }
-
-                    if(impactCanvas) {
-                        const ctxI = impactCanvas.getContext('2d');
-                        App.charts.impact = new Chart(ctxI, {
-                            type: 'pie',
-                            data: {
-                                labels: ['Reputacional', 'Financeiro', 'Jurídico'],
-                                datasets: [{
-                                    data: [0, 0, 0], 
-                                    backgroundColor: ['#8b5cf6', '#10b981', '#f59e0b']
-                                }]
-                            },
-                            options: { responsive: true, maintainAspectRatio: false }
-                        });
-                    }
-                }, 100);
-            }
-        };
-
-        const ReportsService = {
-            exportSingle: (id) => {
-                const r = DB.data.find(x => x.id === id);
-                if(!r) return;
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.setFillColor(30, 58, 138); 
-                doc.rect(0, 0, 210, 24, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(16);
-                doc.setFont('helvetica', 'bold');
-                doc.text('BOLETIM DE OCORRÊNCIA', 14, 15);
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'normal');
-                doc.text('INSTITUTO EVERESTE - GESTÃO DE CRISE DE IMAGEM', 200, 15, { align: 'right' });
-                doc.setTextColor(30, 41, 59);
-                let y = 40;
-                const addBlock = (title, content) => {
-                    if (y > 270) { doc.addPage(); y = 20; }
-                    doc.setFont('helvetica', 'bold');
-                    doc.setFontSize(10);
-                    doc.setTextColor(37, 99, 235);
-                    doc.text(title.toUpperCase(), 14, y);
-                    doc.line(14, y+1, 196, y+1);
-                    y += 6;
-                    doc.setFont('helvetica', 'normal');
-                    doc.setTextColor(51, 65, 85);
-                    const lines = doc.splitTextToSize(String(content || '-'), 180);
-                    doc.text(lines, 14, y);
-                    y += (lines.length * 5) + 8;
-                };
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'bold');
-                doc.text(`ID: ${r.id}`, 14, y);
-                doc.text(`Data: ${new Date(r.data).toLocaleString()}`, 150, y);
-                y += 10;
-                addBlock('1. Fato Gerador', r.fato);
-                addBlock('2. Detalhes de Registro', `Responsável: ${r.resp}\nSetor: ${r.setor || '-'}\nOrigem: ${r.origem || '-'}\nReincidência: ${r.reincidencia}\nPúblico Afetado: ${r.publico || '-'}`);
-                addBlock('3. Classificação de Risco', `Nível: ${r.class}\nCanais: ${r.canais ? r.canais.join(', ') : '-'}\nImpacto: ${r.impacto ? r.impacto.join(', ') : '-'}`);
-                addBlock('4. Descrição Completa', r.desc);
-                addBlock('5. Ações e Resposta', `Medidas Tomadas: ${r.acoes || '-'}\nEquipe Designada: ${r.equipe || '-'}\nPlano de Ação: ${r.plano || '-'}`);
-                addBlock('6. Monitoramento e Métricas', `Métricas: ${r.metricas || '-'}`);
-                addBlock('7. Encaminhamentos Futuros', `Encaminhamentos: ${r.futuro || '-'}`);
-                doc.setFontSize(8);
-                doc.setTextColor(150);
-                doc.text(`Documento confidencial gerado em ${new Date().toLocaleString()}`, 14, 285);
-                doc.save(`${r.id}.pdf`);
-                Toast.show('PDF baixado com sucesso.');
-            },
-            exportFullReport: () => {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.text("Relatório Geral de Crises - Evereste", 14, 15);
-                doc.setFontSize(10);
-                doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, 22);
-                const headers = [['ID', 'Data', 'Fato', 'Resp.', 'Risco', 'Status']];
-                const rows = DB.data.map(r => [
-                    r.id, 
-                    new Date(r.data).toLocaleDateString(), 
-                    r.fato, 
-                    r.resp, 
-                    r.class, 
-                    r.status
-                ]);
-                doc.autoTable({
-                    head: headers,
-                    body: rows,
-                    startY: 30,
-                    theme: 'grid',
-                    headStyles: { fillColor: [30, 58, 138] },
-                    styles: { fontSize: 8 }
-                });
-                doc.save('Relatorio_Geral_Evereste.pdf');
-                Toast.show('Relatório geral baixado.');
-            }
-        };
-
-        if (sessionStorage.getItem('auth_token')) {
-            AuthService.state.step = 2;
-            document.getElementById('login-view').classList.add('hidden');
-            document.getElementById('app-view').classList.remove('hidden');
-            App.init();
+            content.innerHTML = monthSelectorHTML + viewHTML;
+            if(typeof lucide !== 'undefined') lucide.createIcons();
+            attachInputListeners();
         }
+
+        // --- TEMPLATES HTML ---
+        function getDashboardHTML() {
+            const activities = window.state.activities || [];
+            const completedActs = activities.filter(a => a.status === 'Concluído');
+            const annualGoal = activities.length; 
+            const annualAchieved = completedActs.length;
+            const ratedEvents = completedActs.filter(a => a.satisfaction && !isNaN(parseFloat(a.satisfaction)));
+            const totalSatisfaction = ratedEvents.reduce((acc, curr) => acc + parseFloat(curr.satisfaction), 0);
+            const averageSatisfaction = ratedEvents.length > 0 ? Math.round(totalSatisfaction / ratedEvents.length) : 0;
+            const topEvents = activities.filter(a => a.status === 'Concluído' && a.satisfaction).sort((a, b) => parseFloat(b.satisfaction) - parseFloat(a.satisfaction)).slice(0, 5);
+            
+            const topEventsHTML = topEvents.map((evt, idx) => `<div class="flex items-center justify-between p-3 bg-white border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors"><div class="flex items-center gap-3"><div class="w-6 h-6 flex items-center justify-center bg-yellow-100 text-yellow-700 font-bold rounded-full text-xs">${idx + 1}º</div><div><p class="text-sm font-bold text-gray-800">${evt.eventName || 'Evento'}</p><p class="text-[10px] text-gray-500">${evt.type}</p></div></div><div class="flex items-center gap-1 bg-green-50 px-2 py-1 rounded text-green-700 font-bold text-xs">${evt.satisfaction}% <i data-lucide="star" size="12"></i></div></div>`).join('') || '<p class="text-xs text-gray-400 italic text-center py-4">Sem avaliações.</p>';
+            const notificationsHTML = window.state.notifications.map(n => `<div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 mb-2 rounded shadow-sm flex justify-between items-start"><div><p class="text-sm text-yellow-800 font-medium">${n.text}</p><p class="text-[10px] text-yellow-600 mt-1">${new Date(n.timestamp).toLocaleString()} • ${n.author || 'Anon'}</p></div><button onclick="window.deleteNotification('${n.id}')" class="text-yellow-400 hover:text-yellow-700"><i data-lucide="x" size="14"></i></button></div>`).join('');
+
+            return `<div class="space-y-6 animate-fadeIn"><div class="flex justify-between items-center border-b pb-4"><h2 class="text-2xl font-bold text-gray-800">Dashboard Geral</h2><button onclick="window.exportPDF()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium no-print shadow-sm"><i data-lucide="printer"></i> Exportar PDF</button></div><div class="grid grid-cols-1 md:grid-cols-4 gap-4"><div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-indigo-500"><div class="flex justify-between items-center"><div><p class="text-sm text-gray-500 font-medium">Média Real (Anual)</p><h3 class="text-3xl font-bold text-indigo-700">${averageSatisfaction}%</h3></div><i data-lucide="star" class="text-indigo-500 h-8 w-8 opacity-80"></i></div><div class="w-full bg-gray-200 rounded-full h-1.5 mt-2"><div class="bg-indigo-500 h-1.5 rounded-full" style="width: ${averageSatisfaction}%"></div></div></div><div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-600"><div class="flex justify-between items-center"><div><p class="text-sm text-gray-500 font-medium">Meta Anual</p><h3 class="text-3xl font-bold text-gray-800">${annualGoal}</h3></div><i data-lucide="target" class="text-blue-600 h-8 w-8 opacity-80"></i></div></div><div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500"><div class="flex justify-between items-center"><div><p class="text-sm text-gray-500 font-medium">Atingidas</p><h3 class="text-3xl font-bold text-gray-800">${annualAchieved}</h3></div><i data-lucide="check-circle-2" class="text-green-500 h-8 w-8 opacity-80"></i></div></div><div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-red-500"><div class="flex justify-between items-center"><div><p class="text-sm text-gray-500 font-medium">Riscos</p><h3 class="text-3xl font-bold text-gray-800">${window.state.crises.length}</h3></div><i data-lucide="shield-alert" class="text-red-500 h-8 w-8 opacity-80"></i></div></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-6"><div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 no-print flex flex-col"><h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="bar-chart-3" class="text-blue-600"></i> Evolução</h3><div class="h-48 flex items-end gap-2 justify-between px-2">${MONTHS_DATA.map(m => { const c = activities.filter(a => a.month === m.id).length; const h = c > 0 ? Math.min((c/15)*100,100) : 4; return `<div class="flex flex-col items-center flex-1 group relative"><span class="text-xs font-bold text-blue-600 mb-1 absolute bottom-full">${c}</span><div class="w-full rounded-t ${c>0?'bg-blue-500':'bg-gray-100'}" style="height:${h}%"></div><span class="text-xs text-gray-500 mt-2 truncate text-center">${m.name.substring(0,3)}</span></div>`}).join('')}</div></div><div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 no-print flex flex-col h-full"><h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="trophy" class="text-yellow-500"></i> Top Eventos</h3><div class="flex-1 overflow-y-auto custom-scrollbar max-h-[200px]">${topEventsHTML}</div></div><div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 no-print flex flex-col h-full"><h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="bell" class="text-yellow-500"></i> Mural</h3><div class="flex gap-2 mb-4"><input type="text" id="new-notification" placeholder="Aviso..." class="flex-1 border border-gray-300 rounded px-2 py-1 text-sm"><button onclick="window.addNotification()" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Postar</button></div><div class="overflow-y-auto flex-1 custom-scrollbar max-h-[200px]">${notificationsHTML}</div></div></div></div>`;
+        }
+
+        function getMonthViewHTML() {
+            const month = MONTHS_DATA[window.state.selectedMonth];
+            const monthHolidays = window.state.holidays.filter(h => parseInt(h.month) === window.state.selectedMonth);
+            const monthActs = window.state.activities.filter(a => parseInt(a.month) === window.state.selectedMonth);
+            
+            const getTypeColor = (t) => t==='TI'?'bg-purple-100 text-purple-800':t==='Evento Interno'?'bg-blue-100 text-blue-800':t==='Evento Externo'?'bg-indigo-100 text-indigo-800':t==='Campanha'?'bg-pink-100 text-pink-800':t==='Treinamento'?'bg-orange-100 text-orange-800':'bg-cyan-100 text-cyan-800';
+            const getStatusColor = (s) => s==='Concluído'?{bg:'#dcfce7',txt:'#166534'}:s==='Planejado'?{bg:'#fef9c3',txt:'#854d0e'}:{bg:'#fee2e2',txt:'#991b1b'};
+
+            return `
+                <div class="space-y-8 animate-fadeIn">
+                    <div class="bg-white p-6 rounded-lg shadow-sm ${month.color}"><div class="flex justify-between items-center"><h2 class="text-2xl font-bold text-gray-800 uppercase">${month.name}</h2><div class="flex gap-2 no-print"><button onclick="window.handleSave()" class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium"><i data-lucide="cloud-upload" size="16"></i> Salvar / Sincronizar</button><button onclick="window.exportPDF()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"><i data-lucide="printer" size="16"></i> Exportar PDF</button></div></div><div class="mt-6 pt-4 border-t border-gray-100"><div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-2"><h4 class="text-xs font-bold text-gray-500 uppercase">Datas Comemorativas</h4><div class="flex gap-2 no-print bg-gray-50 p-1 rounded items-center"><input type="text" id="holiday-day" placeholder="Dia" class="w-16 border border-gray-300 rounded px-2 py-1 text-xs"><input type="text" id="holiday-name" placeholder="Evento" class="w-32 border border-gray-300 rounded px-2 py-1 text-xs"><button onclick="window.addHoliday()" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-blue-700">Adicionar</button></div></div><div class="flex flex-wrap gap-2">${monthHolidays.map(h => `<div class="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-800 text-xs rounded-full border border-blue-100"><span class="font-bold">${h.day}</span> - ${h.name}<button onclick="window.removeHoliday('${h.id}')" class="text-red-400 hover:text-red-600 ml-1 no-print"><i data-lucide="x" size="12"></i></button></div>`).join('')}</div></div></div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"><div class="flex justify-between items-center p-4 border-b bg-gray-50"><h3 class="font-bold text-gray-700 flex items-center gap-2"><i data-lucide="file-text" class="text-blue-600"></i> Cronograma</h3><button onclick="window.addActivity()" class="flex items-center gap-1 text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 no-print"><i data-lucide="plus" size="14"></i> Adicionar Ação</button></div><div class="overflow-x-auto custom-scrollbar"><table class="w-full text-sm text-left whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 font-semibold uppercase text-xs"><tr><th class="px-4 py-3 min-w-[140px]">Tipo</th><th class="px-4 py-3 min-w-[200px]">Nome</th><th class="px-4 py-3 min-w-[120px]">Público</th><th class="px-4 py-3 min-w-[170px]">Data/Hora</th><th class="px-4 py-3 min-w-[120px]">Link</th><th class="px-4 py-3 min-w-[150px]">Ocorrência</th><th class="px-4 py-3 min-w-[150px]">Tomada</th><th class="px-4 py-3 min-w-[120px]">Satisfação</th><th class="px-4 py-3 min-w-[100px]">Status</th><th class="px-4 py-3 w-[50px] no-print">Ações</th></tr></thead><tbody class="divide-y divide-gray-100">${monthActs.map(act => { const st = getStatusColor(act.status); const satisfactionWidth = act.satisfaction ? Math.min(act.satisfaction, 100) : 0; return `<tr class="hover:bg-gray-50 align-top"><td class="px-4 py-3"><select onchange="window.updateUnifiedActivity('${act.id}', 'type', this.value)" class="w-full border rounded text-xs p-1.5 ${getTypeColor(act.type)} font-bold">${EVENT_TYPES.map(opt => `<option ${act.type === opt ? 'selected' : ''}>${opt}</option>`).join('')}</select></td><td class="px-4 py-3"><input type="text" value="${act.eventName || ''}" data-id="${act.id}" data-field="eventName" class="act-input w-full bg-white border border-gray-300 rounded text-xs p-1.5 font-medium"></td><td class="px-4 py-3"><select onchange="window.updateUnifiedActivity('${act.id}', 'audience', this.value)" class="w-full bg-white border border-gray-300 rounded text-xs p-1.5">${AUDIENCE_OPTIONS.map(opt => `<option ${act.audience === opt ? 'selected' : ''}>${opt}</option>`).join('')}</select></td><td class="px-4 py-3"><div class="flex flex-col gap-1"><input type="date" value="${act.date || ''}" min="2026-01-01" max="2026-12-31" data-id="${act.id}" data-field="date" class="act-input w-full border border-gray-300 rounded text-sm p-1"><input type="time" value="${act.time || ''}" data-id="${act.id}" data-field="time" class="act-input w-full border border-gray-300 rounded text-sm p-1"></div></td><td class="px-4 py-3"><input type="text" value="${act.link || ''}" data-id="${act.id}" data-field="link" class="act-input w-full border border-gray-300 rounded text-xs p-1.5 text-blue-600"></td><td class="px-4 py-3"><div class="flex flex-col gap-1"><input type="text" value="${act.postName || ''}" data-id="${act.id}" data-field="postName" placeholder="Resp." class="act-input w-full border border-gray-200 rounded text-[10px] p-1 bg-gray-50"><textarea data-id="${act.id}" data-field="postOccurrence" class="act-input w-full border border-gray-300 rounded p-1 text-xs h-12 resize-none">${act.postOccurrence || ''}</textarea></div></td><td class="px-4 py-3"><textarea data-id="${act.id}" data-field="postAction" class="act-input w-full border border-gray-300 rounded p-1 text-xs h-16 resize-none bg-yellow-50">${act.postAction || ''}</textarea></td><td class="px-4 py-3"><div class="flex items-center gap-1 mb-1"><input type="number" value="${act.satisfaction || ''}" data-id="${act.id}" data-field="satisfaction" class="act-input w-12 border border-gray-300 rounded text-xs p-1 text-center font-bold" min="0" max="100"><span class="text-xs text-gray-500">%</span></div><div class="w-full bg-gray-200 rounded-full h-1.5"><div class="bg-green-500 h-1.5 rounded-full" style="width: ${satisfactionWidth}%"></div></div></td><td class="px-4 py-3"><select onchange="window.updateUnifiedActivity('${act.id}', 'status', this.value)" class="w-full text-xs font-bold rounded p-1.5 cursor-pointer border-none" style="background-color: ${st.bg}; color: ${st.txt}">${['Planejado','Em Execução','Concluído','Cancelado'].map(s => `<option ${act.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></td><td class="px-4 py-3 text-center no-print"><button onclick="window.requestDeleteActivity('${act.id}')" class="text-gray-400 hover:text-red-600 p-1"><i data-lucide="trash-2" size="16"></i></button></td></tr>` }).join('')}</tbody></table></div></div>
+                </div>
+            `;
+        }
+
+        function getCalendarViewHTML() {
+            const activities = window.state.activities || [];
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                     <div class="flex justify-between items-center border-b pb-4"><h2 class="text-2xl font-bold text-gray-800">Calendário Anual Consolidado</h2><button onclick="window.exportPDF()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium no-print shadow-sm"><i data-lucide="printer"></i> Exportar</button></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${MONTHS_DATA.map(m => {
+                            const mActs = activities.filter(a => parseInt(a.month) === m.id);
+                            const total = mActs.length;
+                            const achieved = mActs.filter(a => a.status === 'Concluído').length;
+                            return `<div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden print-break-inside-avoid flex flex-col h-auto min-h-[150px]"><div class="px-4 py-3 ${m.color} bg-gray-50 border-b border-gray-100 flex justify-between items-center"><h3 class="font-bold text-gray-800">${m.name}</h3><span class="text-xs font-bold bg-white px-2 py-1 rounded shadow-sm border text-gray-500">${total} Ações</span></div><div class="p-4 flex-1"><h4 class="text-xs font-bold text-gray-400 uppercase mb-2">Eventos:</h4><ul class="space-y-1 mb-4">${mActs.length > 0 ? mActs.map(act => `<li class="text-xs text-gray-700 flex items-start gap-2"><span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1 flex-shrink-0"></span><span title="${act.eventName || 'Sem nome'}">${act.eventName || 'Sem nome'}</span></li>`).join('') : '<li class="text-xs text-gray-300 italic">Nenhum evento</li>'}</ul></div><div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-between text-xs mt-auto"><span class="text-green-600 font-bold">Concluídos: ${achieved}</span><span class="text-gray-500">Planejados: ${total}</span></div></div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getCrisisViewHTML() {
+            const crises = window.state.crises || [];
+            const getRiskColor = (l) => l.includes('Grave')||l.includes('Extrema')?'text-red-600':l.includes('Moderada')?'text-orange-600':'text-gray-700';
+            return `
+                <div class="space-y-6 animate-fadeIn">
+                    <div class="bg-red-50 p-6 rounded-lg border border-red-100 flex flex-col md:flex-row justify-between items-start gap-4"><div><h2 class="text-2xl font-bold text-red-800 mb-2 flex items-center gap-2"><i data-lucide="shield-alert"></i> Gestão de Riscos</h2><p class="text-red-700 text-sm max-w-2xl">Classificação de riscos e preenchimento manual.</p></div><div class="flex gap-2 no-print w-full md:w-auto"><button onclick="window.handleSave()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"><i data-lucide="cloud-upload" size="16"></i> Salvar / Sincronizar</button><button onclick="window.exportPDF()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"><i data-lucide="printer" size="16"></i> Exportar PDF</button></div></div>
+                    <button onclick="window.addCrisis()" class="w-full py-4 border-2 border-dashed border-red-300 rounded-lg text-red-600 hover:bg-red-50 hover:border-red-400 transition-colors font-bold uppercase tracking-wide no-print flex items-center justify-center gap-2"><i data-lucide="plus" size="20"></i> Registrar Novo Risco ou Ocorrência</button>
+                    <div class="grid gap-6">
+                        ${crises.map((item, index) => `<div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 relative print-break-inside-avoid"><div class="absolute top-4 right-4 no-print"><button onclick="window.requestDeleteCrisis('${item.id}')" class="flex items-center gap-1 text-gray-400 hover:text-red-600 bg-white border border-gray-200 hover:border-red-200 rounded px-2 py-1 text-xs font-bold"><i data-lucide="trash-2" size="14"></i> Apagar</button></div><h3 class="font-bold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2"><span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">#${index + 1}</span> Ocorrência de Setor</h3><div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 bg-gray-50 p-4 rounded-md border border-gray-100"><div><label class="block text-xs font-bold text-gray-500 mb-1">Nível de Risco</label><select onchange="window.updateUnifiedCrisis('${item.id}', 'riskLevel', this.value)" class="w-full border rounded p-2 text-sm font-bold ${getRiskColor(item.riskLevel)}">${RISK_LEVELS.map(r => `<option ${item.riskLevel === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div><div><label class="block text-xs font-bold text-gray-500 mb-1">Origem</label><select onchange="window.updateUnifiedCrisis('${item.id}', 'origin', this.value)" class="w-full border border-gray-300 rounded p-2 text-sm">${ORIGIN_OPTIONS.map(o => `<option ${item.origin === o ? 'selected' : ''}>${o}</option>`).join('')}</select></div><div><label class="block text-xs font-bold text-gray-500 mb-1">Setor</label><select onchange="window.updateUnifiedCrisis('${item.id}', 'sector', this.value)" class="w-full border border-gray-300 rounded p-2 text-sm">${CRISIS_SECTOR_OPTIONS.map(s => `<option ${item.sector === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div><div><label class="block text-xs font-bold text-gray-500 mb-1">Responsável</label><select onchange="window.updateUnifiedCrisis('${item.id}', 'responsible', this.value)" class="w-full border border-gray-300 rounded p-2 text-sm">${RESPONSIBLE_OPTIONS.map(r => `<option ${item.responsible === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div></div><div class="mb-4"><label class="block text-xs font-bold text-gray-500 mb-1 uppercase text-red-600 flex items-center gap-1"><i data-lucide="alert-triangle" size="12"></i> Plano de Ação Corretiva</label><textarea data-cid="${item.id}" data-cfield="correctiveAction" class="crisis-input w-full border border-red-100 bg-white rounded p-3 text-sm focus:ring-red-500 min-h-[80px]" placeholder="Descreva ação tomada...">${item.correctiveAction}</textarea></div><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="bg-gray-50 p-3 rounded border border-gray-100"><label class="block text-xs font-bold text-gray-600 mb-1">Impactos / Riscos</label><textarea data-cid="${item.id}" data-cfield="risks" class="crisis-input w-full bg-white border border-gray-200 rounded p-2 text-xs h-24 resize-none">${item.risks}</textarea></div><div class="bg-blue-50 p-3 rounded border border-blue-100"><label class="block text-xs font-bold text-blue-800 mb-1">Aprendizados</label><textarea data-cid="${item.id}" data-cfield="learning" class="crisis-input w-full bg-white border border-blue-200 rounded p-2 text-xs h-24 resize-none">${item.learning}</textarea></div><div class="bg-green-50 p-3 rounded border border-green-100"><label class="block text-xs font-bold text-green-800 mb-1">Melhoria Futura</label><textarea data-cid="${item.id}" data-cfield="improvement" class="crisis-input w-full bg-white border border-green-200 rounded p-2 text-xs h-24 resize-none">${item.improvement}</textarea></div></div></div>`).join('')}${crises.length === 0 ? `<div class="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300"><i data-lucide="shield-check" class="mx-auto h-12 w-12 text-gray-300 mb-3"></i><p class="text-gray-500 font-medium">Nenhum risco ou ocorrência registrada.</p></div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function getReportsViewHTML() {
+            const activities = window.state.activities || [];
+            const monthActs = activities.filter(a => parseInt(a.month) === window.state.selectedMonth);
+            const total = monthActs.length;
+            const completed = monthActs.filter(a => a.status === 'Concluído').length;
+            const missed = total - completed;
+            const internal = monthActs.filter(a => a.type === 'Evento Interno').length;
+            const ratedMonthActs = monthActs.filter(a => a.satisfaction && !isNaN(parseFloat(a.satisfaction)));
+            const totalMonthSat = ratedMonthActs.reduce((acc, curr) => acc + parseFloat(curr.satisfaction), 0);
+            const avgMonthSat = ratedMonthActs.length > 0 ? Math.round(totalMonthSat / ratedMonthActs.length) : 0;
+            const report = (window.state.monthlyReports && window.state.monthlyReports[window.state.selectedMonth]) || { explanation: '', highlights: '', suggestions: '' };
+
+            return `
+                <div class="space-y-8 animate-fadeIn max-w-5xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 gap-4"><div><h2 class="text-2xl font-bold text-gray-800">Relatório de Desempenho e Metas</h2><p class="text-gray-500">Mês de Referência: <span class="font-bold text-blue-600">${MONTHS_DATA[window.state.selectedMonth].name}</span></p></div><div class="flex gap-2 no-print w-full md:w-auto flex-wrap"><button onclick="window.exportPDF()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 font-bold"><i data-lucide="file-check-2" size="16"></i> Exportar para Alta Gestão</button><button onclick="window.requestClearReport()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-red-100 text-red-700 border border-red-200 rounded hover:bg-red-200"><i data-lucide="eraser" size="16"></i> Apagar</button><button onclick="window.handleSave()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"><i data-lucide="cloud-upload" size="16"></i> Salvar / Sincronizar</button></div></div>
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm"><h3 class="text-sm font-bold text-gray-500 uppercase mb-4 border-b pb-2">Metas Consolidadas do Mês</h3><div class="grid grid-cols-2 md:grid-cols-5 gap-4"><div class="p-4 bg-gray-50 rounded text-center"><div class="text-3xl font-bold text-gray-800">${total}</div><div class="text-xs font-bold text-gray-500 uppercase mt-1">Meta Mensal (Ações)</div></div><div class="p-4 bg-green-50 rounded text-center"><div class="text-3xl font-bold text-green-600">${completed}</div><div class="text-xs font-bold text-green-800 uppercase mt-1">Metas Atingidas</div></div><div class="p-4 bg-yellow-50 rounded text-center"><div class="text-3xl font-bold text-yellow-600">${missed}</div><div class="text-xs font-bold text-yellow-800 uppercase mt-1">Não Alcançadas</div></div><div class="p-4 bg-blue-50 rounded text-center"><div class="text-3xl font-bold text-blue-600">${internal}</div><div class="text-xs font-bold text-blue-800 uppercase mt-1">Eventos Internos</div></div><div class="p-4 bg-indigo-50 rounded text-center border border-indigo-100"><div class="text-3xl font-bold text-indigo-600">${avgMonthSat}%</div><div class="text-xs font-bold text-indigo-800 uppercase mt-1">Média Satisfação</div></div></div></div>
+                    <div class="space-y-6"><div class="bg-white p-6 rounded shadow-sm border border-gray-200"><div class="flex justify-between items-center mb-2"><h3 class="font-bold text-gray-800 text-lg">1. Análise Direta</h3><button onclick="window.generateAutoText()" class="flex items-center gap-1 text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-200 font-bold no-print"><i data-lucide="wand-2" size="12"></i> Gerar Análise</button></div><textarea id="report-explanation" oninput="window.updateUnifiedReport('${window.state.selectedMonth}', 'explanation', this.value)" class="w-full border border-gray-300 rounded p-4 h-48 focus:ring-blue-500 resize-none leading-relaxed text-sm text-gray-700" placeholder="Escreva a análise da alta gestão...">${report.explanation || ''}</textarea></div><div class="bg-white p-6 rounded shadow-sm border border-gray-200"><div class="flex justify-between items-center mb-2"><h3 class="font-bold text-gray-800 text-lg">2. Pontos Altos</h3><button onclick="window.generateHighlights()" class="flex items-center gap-1 text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full hover:bg-green-200 font-bold no-print"><i data-lucide="wand-2" size="12"></i> Gerar Destaques</button></div><textarea id="report-highlights" oninput="window.updateUnifiedReport('${window.state.selectedMonth}', 'highlights', this.value)" class="w-full border border-gray-300 rounded p-4 h-32 focus:ring-green-500 resize-none text-sm" placeholder="Liste resultados...">${report.highlights || ''}</textarea></div></div>
+                </div>
+            `;
+        }
+
+        function attachInputListeners() {
+            document.querySelectorAll('.act-input').forEach(input => {
+                input.addEventListener('change', (e) => { 
+                    window.updateUnifiedActivity(e.target.dataset.id, e.target.dataset.field, e.target.value);
+                });
+            });
+            document.querySelectorAll('.crisis-input').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    window.updateUnifiedCrisis(e.target.dataset.cid, e.target.dataset.cfield, e.target.value);
+                });
+            });
+        }
+
+        // --- INICIALIZAÇÃO ---
+        async function initSystem() {
+            const dateEl = document.getElementById('print-date');
+            if(dateEl) dateEl.innerText = new Date().toLocaleDateString();
+
+            if (!firebaseConfig || Object.keys(firebaseConfig).length === 0) {
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-red-600 bg-red-50 p-6 rounded-lg border border-red-200 max-w-md mx-auto">
+                        <h3 class="text-lg font-bold mb-2">Erro de Configuração</h3>
+                        <p class="text-sm mb-4">Configuração do Firebase não encontrada.</p>
+                    </div>`;
+                return;
+            }
+
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            // Listener de Auth Global
+            onAuthStateChanged(auth, (user) => {
+                const loginScreen = document.getElementById('login-screen');
+                const appWrapper = document.getElementById('app-wrapper');
+                const connStatus = document.getElementById('connection-status');
+                const userEmailDisplay = document.getElementById('user-email-display');
+                const printUser = document.getElementById('print-user');
+
+                if (user) {
+                    // Usuário Logado
+                    window.state.user = user;
+                    if(loginScreen) loginScreen.classList.add('hidden');
+                    if(appWrapper) appWrapper.classList.remove('hidden-app');
+                    if(connStatus) connStatus.innerText = 'Online (Sincronizado)';
+                    if(userEmailDisplay) userEmailDisplay.innerText = user.email;
+                    if(printUser) printUser.innerText = user.email;
+                    
+                    setupRealtimeListeners();
+                } else {
+                    // Usuário Deslogado
+                    window.state.user = null;
+                    if(loginScreen) loginScreen.classList.remove('hidden');
+                    if(appWrapper) appWrapper.classList.add('hidden-app');
+                    if(connStatus) connStatus.innerText = 'A aguardar login...';
+                }
+            });
+        }
+
+        function setupRealtimeListeners() {
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'activities'), (s) => { 
+                window.state.activities = s.docs.map(d => ({ id: d.id, ...d.data() })); 
+                renderApp(); 
+            });
+
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'crises'), (s) => { 
+                window.state.crises = s.docs.map(d => ({ id: d.id, ...d.data() })); 
+                renderApp(); 
+            });
+
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'notifications'), (s) => { 
+                window.state.notifications = s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp)); 
+                renderApp(); 
+            });
+
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'holidays'), (s) => { 
+                const h = s.docs.map(d => ({ id: d.id, ...d.data() })); 
+                if(h.length) window.state.holidays = h; 
+                renderApp(); 
+            });
+
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'reports'), (s) => { 
+                const r = {}; 
+                s.docs.forEach(d => r[d.id] = d.data()); 
+                window.state.monthlyReports = r; 
+                renderApp(); 
+            });
+        }
+
+        initSystem();
+
     </script>
 </body>
 </html>
