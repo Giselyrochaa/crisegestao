@@ -245,7 +245,9 @@
         const RESPONSIBLE_OPTIONS = ['Vera Nascimento', 'Gisely Rocha'];
 
         // --- CONFIGURAÇÃO FIREBASE ---
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        // A chave e configuração são injetadas pelo ambiente.
+        // Se undefined, fallback para objeto vazio (o que será tratado no init)
+        const __firebase_config_str = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app';
 
         // --- ESTADO GLOBAL ---
@@ -265,12 +267,10 @@
 
         // --- ERROR HANDLER ---
         window.onerror = function(message) {
-            console.error("Erro:", message);
+            console.error("Erro Global:", message);
         };
 
         // --- FUNÇÕES DE AUTH (INTERFACE) ---
-        
-        // Alternar entre Login e Cadastro na UI
         const toggleAuthBtn = document.getElementById('toggle-auth-mode');
         const btnLogin = document.getElementById('btn-login');
         const form = document.getElementById('auth-form');
@@ -301,15 +301,24 @@
                 btnLogin.disabled = true;
                 btnLogin.innerText = "A processar...";
 
+                if (!auth) {
+                    errorDiv.innerText = "Erro: Firebase não inicializado corretamente. Recarregue a página.";
+                    errorDiv.classList.remove('hidden');
+                    btnLogin.disabled = false;
+                    return;
+                }
+
                 try {
                     if (window.state.isLoginMode) {
+                        // CORREÇÃO CRÍTICA: Passar 'auth' como primeiro argumento
                         await signInWithEmailAndPassword(auth, email, password);
                     } else {
+                        // CORREÇÃO CRÍTICA: Passar 'auth' como primeiro argumento
                         await createUserWithEmailAndPassword(auth, email, password);
                     }
                     // Sucesso: o onAuthStateChanged lidará com a UI
                 } catch (error) {
-                    console.error(error);
+                    console.error("Auth Error:", error);
                     errorDiv.innerText = "Erro: " + error.message;
                     errorDiv.classList.remove('hidden');
                     btnLogin.disabled = false;
@@ -320,8 +329,7 @@
 
         window.logout = async () => {
             try {
-                await signOut(auth);
-                // onAuthStateChanged atualizará a UI
+                if(auth) await signOut(auth);
             } catch(e) { console.error(e); }
         };
 
@@ -616,11 +624,10 @@
             if(dateEl) dateEl.innerText = new Date().toLocaleDateString();
 
             if (!firebaseConfig || Object.keys(firebaseConfig).length === 0) {
-                document.getElementById('loading').innerHTML = `
-                    <div class="text-red-600 bg-red-50 p-6 rounded-lg border border-red-200 max-w-md mx-auto">
-                        <h3 class="text-lg font-bold mb-2">Erro de Configuração</h3>
-                        <p class="text-sm mb-4">Configuração do Firebase não encontrada.</p>
-                    </div>`;
+                // If config is missing, check if using local fallback mode intended? 
+                // For now, assume config is required.
+                const loading = document.getElementById('loading');
+                if(loading) loading.innerHTML = '<div class="text-red-500">Erro: Configuração Firebase ausente.</div>';
                 return;
             }
 
@@ -628,7 +635,6 @@
             auth = getAuth(app);
             db = getFirestore(app);
 
-            // Listener de Auth Global
             onAuthStateChanged(auth, (user) => {
                 const loginScreen = document.getElementById('login-screen');
                 const appWrapper = document.getElementById('app-wrapper');
@@ -637,7 +643,6 @@
                 const printUser = document.getElementById('print-user');
 
                 if (user) {
-                    // Usuário Logado
                     window.state.user = user;
                     if(loginScreen) loginScreen.classList.add('hidden');
                     if(appWrapper) appWrapper.classList.remove('hidden-app');
@@ -647,7 +652,6 @@
                     
                     setupRealtimeListeners();
                 } else {
-                    // Usuário Deslogado
                     window.state.user = null;
                     if(loginScreen) loginScreen.classList.remove('hidden');
                     if(appWrapper) appWrapper.classList.add('hidden-app');
